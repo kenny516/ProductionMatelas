@@ -19,19 +19,14 @@ public class Transformation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @ManyToOne
     @JoinColumn(name = "block_id", nullable = false)
     private Block block;
-
     @ManyToOne
-    @JoinColumn(name = "produit_id", nullable = false)
-    private Produit produit;
-
-    private Integer quantite;
-
+    @JoinColumn(name = "reste_id", nullable = false)
+    private Reste reste;
     @Column(name = "date_transformation", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime dateTransformation;
 
-    private Double prixRevient;
+
 }

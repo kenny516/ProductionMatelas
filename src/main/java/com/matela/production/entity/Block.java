@@ -14,17 +14,16 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Block {
+public class Block extends Dimension{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    private Double longueur;
-    private Double largeur;
-    private Double epaisseur;
-    private Double coutProduction;
-
+    private Double cout_production;
     @Column(name = "date_production", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime dateProduction;
+    @ManyToOne
+    @JoinColumn(name = "block_mere")
+    private Block block_mere;
+
 }

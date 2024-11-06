@@ -8,19 +8,20 @@ CREATE TABLE block
     largeur         DECIMAL(10, 2),
     epaisseur       DECIMAL(10, 2),
     cout_production DECIMAL(10, 2),
+    block_mere      INTEGER REFERENCES block (id),
     date_production TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE reste
-(
-    id              SERIAL PRIMARY KEY,
-    block_id        INTEGER REFERENCES block (id),
-    longueur        DECIMAL(10, 2),
-    largeur         DECIMAL(10, 2),
-    epaisseur       DECIMAL(10, 2),
-    cout_production DECIMAL(10, 2),
-    date_creation   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+-- CREATE TABLE reste
+-- (
+--     id              SERIAL PRIMARY KEY,
+--     block_id        INTEGER REFERENCES block (id),
+--     longueur        DECIMAL(10, 2),
+--     largeur         DECIMAL(10, 2),
+--     epaisseur       DECIMAL(10, 2),
+--     cout_production DECIMAL(10, 2),
+--     date_creation   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- );
 
 CREATE TABLE produit
 (
@@ -36,16 +37,36 @@ CREATE TABLE transformation
 (
     id                  SERIAL PRIMARY KEY,
     block_id            INTEGER REFERENCES block (id),
-    produit_id          INTEGER REFERENCES produit (id),
-    quantite            INTEGER,
-    date_transformation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    prix_revient        DECIMAL(10, 2)
+    reste_id            INTEGER REFERENCES block (id),
+    date_transformation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE TABLE transformationDetail
+(
+    id                SERIAL PRIMARY KEY,
+    transformation_id INTEGER REFERENCES transformation (id),
+    produit_id        INTEGER REFERENCES produit (id),
+    quantite          INTEGER,
+    prix_revient      DECIMAL(10, 2)
+);
+
+
 
 CREATE TABLE stock
 (
-    id              SERIAL PRIMARY KEY,
-    block_id        INTEGER REFERENCES block (id),
-    reste_id        INTEGER REFERENCES reste (id) DEFAULT NULL,
-    date_inventaire TIMESTAMP                     DEFAULT CURRENT_TIMESTAMP
+    id                 SERIAL PRIMARY KEY,
+    block_id           INTEGER REFERENCES block (id) UNIQUE,
+    longueur_actuelle  DECIMAL(10, 2),
+    largeur_actuelle   DECIMAL(10, 2),
+    epaisseur_actuelle DECIMAL(10, 2),
+    quantite           INTEGER   DEFAULT 1,
+    date_inventaire    TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+CREATE OR REPLACE VIEW stock_view AS
+SELECT s.*
+FROM stock s
+         JOIN (SELECT block_id, MAX(date_inventaire) AS latest_date
+               FROM stock
+               GROUP BY block_id) latest_stock ON s.block_id = latest_stock.block_id
+    AND s.date_inventaire = latest_stock.latest_date;

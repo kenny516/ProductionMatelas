@@ -1,5 +1,6 @@
 package com.matela.production.service;
 
+import com.matela.production.entity.Block;
 import com.matela.production.entity.Reste;
 import com.matela.production.repository.ResteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,4 +40,17 @@ public class ResteService {
     public void deleteReste(Long id) {
         resteRepository.deleteById(id);
     }
+
+    public Block getLastResteByBlock(Block block){
+        Reste reste = resteRepository.findFirstByBlockIdOrderByDateCreationDesc(block.getId());
+        if (reste == null){
+            return block;
+        }else {
+            block.setLongueur(reste.getLongueur());
+            block.setLargeur(reste.getLargeur());
+            block.setEpaisseur(reste.getEpaisseur());
+        }
+        return block;
+    }
+
 }

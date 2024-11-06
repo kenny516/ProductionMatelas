@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Submission Status</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/all.min.css}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: Arial, sans-serif;
+        }
+
+        .status-container {
+            max-width: 500px;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .status-icon {
+            font-size: 60px;
+        }
+
+        .status-message {
+            margin-top: 20px;
+        }
+
+        .btn-back {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="status-container">
+    <div th:if="${status == 'success'}">
+        <i class="fas fa-check-circle text-success status-icon"></i>
+        <h3 class="text-success status-message">Form Submitted Successfully!</h3>
+        <p>Your form has been successfully submitted. We will get back to you shortly.</p>
+    </div>
+
+    <div th:if="${status == 'error'}">
+        <i class="fas fa-times-circle text-danger status-icon"></i>
+        <h3 class="text-danger status-message">Submission Failed!</h3>
+        <p>Oops! There was an error submitting your form. Please try again later.</p>
+    </div>
+
+    <div th:if="${status == 'info'}">
+        <i class="fas fa-info-circle text-info status-icon"></i>
+        <h3 class="text-info status-message">Processing...</h3>
+        <p>Your form is being processed. This may take a few moments.</p>
+    </div>
+
+    <a href="/" class="btn btn-primary btn-back"><i class="fas fa-arrow-left"></i> Go Back</a>
+</div>
+
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

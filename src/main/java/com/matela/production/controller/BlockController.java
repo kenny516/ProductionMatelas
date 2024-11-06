@@ -15,17 +15,24 @@ public class BlockController {
 
     @GetMapping("/form-block")
     public String insertionBlock(Model model) {
-        model.addAttribute("block",new Block());
-        return "InsertionBlock";
+        model.addAttribute("block", new Block());
+        return "block/InsertionBlock";
     }
-    @PostMapping
-    public String block(Block block, Model model){
+
+    @GetMapping("/blocks")
+    public String listeBlocks(Model model) {
+        model.addAttribute("blocks", blockService.getAllBlocks());
+        return "block/liste";
+    }
+
+    @PostMapping("save-product")
+    public String saveblock(Block block, Model model) {
         blockService.createBlock(block);
-        return "InsertionBlock";
+        Block[] listeBlock = blockService.getAllBlocks().toArray(new Block[0]);
+        model.addAttribute("blocks", listeBlock);
+        model.addAttribute("status", "success");
+        return "result-status";
     }
-
-
-
 
 
 }

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html th:fragment="navbar" lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .navbar-custom {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .navbar-custom .navbar-brand {
+            font-weight: bold;
+            color: white;
+        }
+        .navbar-custom .nav-link {
+            color: #ecf0f1;
+        }
+        .navbar-custom .dropdown-menu {
+            background-color: #34495e;
+            border: none;
+        }
+        .navbar-custom .dropdown-item {
+            color: #ecf0f1;
+        }
+        .navbar-custom .dropdown-item:hover {
+            background-color: #3a5068;
+        }
+        .navbar-custom .nav-link:hover {
+            background-color: #34495e;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-custom">
+    <div class="container-fluid">
+        <!-- Brand -->
+        <a class="navbar-brand d-flex align-items-center" href="#">
+            <i class="fas fa-bed me-2"></i> MateFoam
+        </a>
+
+        <!-- Toggle button for mobile view -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- Navbar links -->
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <!-- Block Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="blockDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-cube"></i> Block
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="blockDropdown">
+                        <li><a class="dropdown-item" th:href="@{/form-block}"><i class="fas fa-plus-circle me-2"></i> Nouveau Block</a></li>
+                        <li><a class="dropdown-item" th:href="@{/blocks}"><i class="fas fa-list me-2"></i> Liste des Blocks</a></li>
+                    </ul>
+                </li>
+
+                <!-- Transformation Dropdown -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="transformationDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-industry"></i> Transformation
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="transformationDropdown">
+                        <li><a class="dropdown-item" th:href="@{/form-transformation}"><i class="fas fa-plus-circle me-2"></i> Nouvelles Transformation</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-list me-2"></i> Liste des Transformations</a></li>
+                    </ul>
+                </li>
+
+                <!-- Stock Link -->
+                <li class="nav-item">
+                    <a class="nav-link" href="#">
+                        <i class="fas fa-warehouse"></i> Stock
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+

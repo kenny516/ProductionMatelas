@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transformation des Produits</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+</head>
+<body>
+
+<div class="container">
+    <h1>Ajouter des Transactions de Transformation</h1>
+
+    <div class="form-group">
+        <label for="blockSelect">Block</label>
+        <select id="blockSelect" class="form-control" required>
+            <option value="" selected disabled>Sélectionner un block</option>
+            <option th:each="block : ${blocks}" th:value="${block.id}" th:text="Block num ${block.id}"></option>
+        </select>
+    </div>
+    <!-- Formulaire d'ajout de transaction -->
+    <div class="form-group">
+        <label for="produitSelect">Produit</label>
+        <select id="produitSelect" class="form-control" required>
+            <option value="" selected disabled>Sélectionner un produit</option>
+            <option th:each="produit : ${produits}" th:value="${produit.id}" th:text="${produit.nom}"></option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="quantityInput">Quantité</label>
+        <input type="number" id="quantityInput" class="form-control" min="1" placeholder="Quantité" required>
+    </div>
+    <button type="button" onclick="addTransaction()" class="btn btn-primary mt-3">Ajouter la transaction</button>
+
+    <!-- Liste des transactions ajoutées -->
+    <h3 class="mt-4">Liste des transactions</h3>
+    <ul id="transactionList" class="list-group mb-3">
+        <!-- Les transactions ajoutées s'afficheront ici -->
+    </ul>
+
+    <!-- Bouton pour valider et envoyer toutes les transactions -->
+    <button type="button" onclick="submitTransactions()" class="btn btn-success">Valider</button>
+</div>
+
+<script>
+    // Tableau pour stocker les transactions
+    const transactions = [];
+
+    function addTransaction() {
+        const produitId = document.getElementById('produitSelect').value;
+        const produitNom = document.getElementById('produitSelect').selectedOptions[0].text;
+        const quantity = document.getElementById('quantityInput').value;
+        const blockId = document.getElementById('blockSelect').value;
+
+        if (produitId && quantity) {
+            // Ajouter la transaction au tableau
+            const transaction = {"block_id": blockId,"produit_id": produitId,"quantite": quantity };
+            transactions.push(transaction);
+
+            // Afficher dans la liste
+            const transactionList = document.getElementById('transactionList');
+            const listItem = document.createElement('li');
+            listItem.className = 'list-group-item';
+            listItem.textContent = `Produit: ${produitNom}, Quantité: ${quantity}`;
+            transactionList.appendChild(listItem);
+
+            // Réinitialiser les champs
+            document.getElementById('quantityInput').value = '';
+        }
+    }
+
+    function submitTransactions() {
+        // Envoyer les transactions via POST
+        fetch('/save-transformation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(transactions),
+        })
+            .then(response => {
+                if (response.ok) {
+                    alert('Transformation enregistrée avec succès !');
+                    window.location.reload(); // Recharger la page pour vider le formulaire
+                } else {
+                    alert('Erreur lors de l\'enregistrement.');
+                }
+            })
+            .catch(error => console.error('Erreur:', error));
+    }
+</script>
+
+</body>
+</html>

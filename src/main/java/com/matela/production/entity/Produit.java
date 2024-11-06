@@ -12,15 +12,12 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Produit {
+public class Produit extends Dimension {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String nom;
-    private Double longueur;
-    private Double largeur;
-    private Double epaisseur;
     private Double prixVente;
 }

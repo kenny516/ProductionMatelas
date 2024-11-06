@@ -13,6 +13,10 @@ public class StockService {
 
     @Autowired
     private StockRepository stockRepository;
+    @Autowired
+    private BlockService blockService;
+    @Autowired
+    private ProduitService produitService;
 
     public List<Stock> getAllStocks() {
         return stockRepository.findAll();
@@ -37,4 +41,10 @@ public class StockService {
     public void deleteStock(Long id) {
         stockRepository.deleteById(id);
     }
+
+
+
+
+
+
 }

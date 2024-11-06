@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Liste des Blocs de Mousse</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/all.min.css}" rel="stylesheet">
+    <style>
+        .table-container {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px auto;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .custom-table {
+            background-color: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .custom-table thead {
+            background-color: #2c3e50;
+            color: white;
+        }
+
+        .custom-table th {
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .dimension-cell {
+            background-color: #f8f9fa;
+        }
+
+        .cost-cell {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .date-cell {
+            color: #6c757d;
+            font-size: 0.9em;
+        }
+
+        .table-title {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .actions-cell {
+            white-space: nowrap;
+        }
+
+        .btn-action {
+            padding: 5px 10px;
+            margin: 0 3px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+<div th:insert="~{fragments/navbar :: navbar}"></div>
+<div class="container py-5">
+    <h1 class="table-title">
+        <i class="fas fa-cubes me-2"></i>
+        Gestion des Blocs de Mousse
+    </h1>
+
+    <div class="table-container">
+        <div class="table-responsive">
+            <table class="table custom-table table-hover mb-0">
+                <thead>
+                <tr>
+                    <th><i class="fas fa-hashtag me-2"></i>ID</th>
+                    <th><i class="fas fa-arrows-alt-h me-2"></i>Longueur</th>
+                    <th><i class="fas fa-arrows-alt-h me-2"></i>Largeur</th>
+                    <th><i class="fas fa-arrows-alt-v me-2"></i>Épaisseur</th>
+                    <th><i class="fas fa-euro-sign me-2"></i>Coût</th>
+                    <th><i class="far fa-calendar-alt me-2"></i>Date de Production</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="bloc : ${blocks}">
+                    <td th:text="${bloc.id}">1</td>
+                    <td class="dimension-cell" th:text="${bloc.longueur + ' m'}"></td>
+                    <td class="dimension-cell" th:text="${bloc.largeur + ' m'}"></td>
+                    <td class="dimension-cell" th:text="${bloc.epaisseur + ' m'}"></td>
+                    <td class="cost-cell" th:text="${#numbers.formatDecimal(bloc.coutProduction, 1, 2) + ' Ar'}"></td>
+                    <td class="date-cell" th:text="${#temporals.format(bloc.dateProduction, 'dd/MM/yyyy HH:mm')}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

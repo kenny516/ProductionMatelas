@@ -40,4 +40,8 @@ public class ProduitService {
     public void deleteProduit(Long id) {
         produitRepository.deleteById(id);
     }
+
+    public Double getVolume(Produit produit) {
+        return produit.getLongueur() * produit.getLargeur() * produit.getEpaisseur();
+    }
 }
