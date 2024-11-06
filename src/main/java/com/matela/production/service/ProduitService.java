@@ -1,11 +1,12 @@
 package com.matela.production.service;
 
-import com.matela.production.model.Produit;
+import com.matela.production.entity.Produit;
 import com.matela.production.repository.ProduitRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProduitService {
@@ -17,25 +18,23 @@ public class ProduitService {
         return produitRepository.findAll();
     }
 
-    public Produit getProduitById(Long id) {
-        return produitRepository.findById(id).orElse(null);
+    public Optional<Produit> getProduitById(Long id) {
+        return produitRepository.findById(id);
     }
 
     public Produit createProduit(Produit produit) {
         return produitRepository.save(produit);
     }
 
-    public Produit updateProduit(Long id, Produit produitDetails) {
-        Produit produit = produitRepository.findById(id).orElse(null);
-        if (produit != null) {
+    public Optional<Produit> updateProduit(Long id, Produit produitDetails) {
+        return produitRepository.findById(id).map(produit -> {
             produit.setNom(produitDetails.getNom());
             produit.setLongueur(produitDetails.getLongueur());
             produit.setLargeur(produitDetails.getLargeur());
             produit.setEpaisseur(produitDetails.getEpaisseur());
             produit.setPrixVente(produitDetails.getPrixVente());
             return produitRepository.save(produit);
-        }
-        return null;
+        });
     }
 
     public void deleteProduit(Long id) {

@@ -1,4 +1,4 @@
-package com.matela.production.model;
+package com.matela.production.entity;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -14,8 +14,7 @@ import java.time.LocalDateTime;
 @Table(name = "reste")
 public class Reste {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "reste_id_gen")
-    @SequenceGenerator(name = "reste_id_gen", sequenceName = "reste_id_seq", allocationSize = 1)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Integer id;
 

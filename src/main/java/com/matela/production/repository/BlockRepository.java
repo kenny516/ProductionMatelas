@@ -1,6 +1,6 @@
 package com.matela.production.repository;
 
-import com.matela.production.model.Block;
+import com.matela.production.entity.Block;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

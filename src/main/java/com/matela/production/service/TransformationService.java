@@ -1,11 +1,12 @@
 package com.matela.production.service;
 
-import com.matela.production.model.Transformation;
+import com.matela.production.entity.Transformation;
 import com.matela.production.repository.TransformationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class TransformationService {
@@ -17,24 +18,23 @@ public class TransformationService {
         return transformationRepository.findAll();
     }
 
-    public Transformation getTransformationById(Long id) {
-        return transformationRepository.findById(id).orElse(null);
+    public Optional<Transformation> getTransformationById(Long id) {
+        return transformationRepository.findById(id);
     }
 
     public Transformation createTransformation(Transformation transformation) {
         return transformationRepository.save(transformation);
     }
 
-    public Transformation updateTransformation(Long id, Transformation transformationDetails) {
-        Transformation transformation = transformationRepository.findById(id).orElse(null);
-        if (transformation != null) {
+    public Optional<Transformation> updateTransformation(Long id, Transformation transformationDetails) {
+        return transformationRepository.findById(id).map(transformation -> {
+
             transformation.setBlock(transformationDetails.getBlock());
             transformation.setProduit(transformationDetails.getProduit());
             transformation.setQuantite(transformationDetails.getQuantite());
             transformation.setPrixRevient(transformationDetails.getPrixRevient());
             return transformationRepository.save(transformation);
-        }
-        return null;
+        });
     }
 
     public void deleteTransformation(Long id) {

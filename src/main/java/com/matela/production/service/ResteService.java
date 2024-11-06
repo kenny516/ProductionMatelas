@@ -1,11 +1,12 @@
 package com.matela.production.service;
 
-import com.matela.production.model.Reste;
+import com.matela.production.entity.Reste;
 import com.matela.production.repository.ResteRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ResteService {
@@ -17,24 +18,22 @@ public class ResteService {
         return resteRepository.findAll();
     }
 
-    public Reste getResteById(Long id) {
-        return resteRepository.findById(id).orElse(null);
+    public Optional<Reste> getResteById(Long id) {
+        return resteRepository.findById(id);
     }
 
     public Reste createReste(Reste reste) {
         return resteRepository.save(reste);
     }
 
-    public Reste updateReste(Long id, Reste resteDetails) {
-        Reste reste = resteRepository.findById(id).orElse(null);
-        if (reste != null) {
+    public Optional<Reste> updateReste(Long id, Reste resteDetails) {
+        return resteRepository.findById(id).map(reste ->{
             reste.setLongueur(resteDetails.getLongueur());
             reste.setLargeur(resteDetails.getLargeur());
             reste.setEpaisseur(resteDetails.getEpaisseur());
             reste.setCoutProduction(resteDetails.getCoutProduction());
             return resteRepository.save(reste);
-        }
-        return null;
+        });
     }
 
     public void deleteReste(Long id) {

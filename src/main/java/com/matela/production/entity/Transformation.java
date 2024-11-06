@@ -1,4 +1,4 @@
-package com.matela.production.model;
+package com.matela.production.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -9,12 +9,12 @@ import lombok.Setter;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "stock")
+@Table(name = "transformation")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Stock {
+public class Transformation {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +25,13 @@ public class Stock {
     private Block block;
 
     @ManyToOne
-    @JoinColumn(name = "reste_id")
-    private Reste reste;
+    @JoinColumn(name = "produit_id", nullable = false)
+    private Produit produit;
 
-    @Column(name = "date_inventaire", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime dateInventaire;
+    private Integer quantite;
+
+    @Column(name = "date_transformation", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime dateTransformation;
+
+    private Double prixRevient;
 }

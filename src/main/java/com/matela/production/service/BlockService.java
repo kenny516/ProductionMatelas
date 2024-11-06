@@ -1,11 +1,12 @@
 package com.matela.production.service;
 
-import com.matela.production.model.Block;
+import com.matela.production.entity.Block;
 import com.matela.production.repository.BlockRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class BlockService {
@@ -17,24 +18,22 @@ public class BlockService {
         return blockRepository.findAll();
     }
 
-    public Block getBlockById(Long id) {
-        return blockRepository.findById(id).orElse(null);
+    public Optional<Block> getBlockById(Long id) {
+        return blockRepository.findById(id);
     }
 
     public Block createBlock(Block block) {
         return blockRepository.save(block);
     }
 
-    public Block updateBlock(Long id, Block blockDetails) {
-        Block block = blockRepository.findById(id).orElse(null);
-        if (block != null) {
+    public Optional<Block> updateBlock(Long id, Block blockDetails) {
+        return blockRepository.findById(id).map(block -> {
             block.setLongueur(blockDetails.getLongueur());
             block.setLargeur(blockDetails.getLargeur());
             block.setEpaisseur(blockDetails.getEpaisseur());
             block.setCoutProduction(blockDetails.getCoutProduction());
             return blockRepository.save(block);
-        }
-        return null;
+        });
     }
 
     public void deleteBlock(Long id) {
