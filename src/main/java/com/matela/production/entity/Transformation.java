@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "transformation")
@@ -24,9 +25,13 @@ public class Transformation {
     private Block block;
     @ManyToOne
     @JoinColumn(name = "reste_id", nullable = false)
-    private Reste reste;
+    private Block reste;
     @Column(name = "date_transformation", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime dateTransformation;
+
+    @OneToMany
+    @JoinColumn(name = "transformation_id")
+    List<TransformationDetail> transformationDetail;
 
 
 }

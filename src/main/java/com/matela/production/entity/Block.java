@@ -19,11 +19,11 @@ public class Block extends Dimension{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Double cout_production;
-    @Column(name = "date_production", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime dateProduction;
+    private Double coutProduction;
     @ManyToOne
     @JoinColumn(name = "block_mere")
-    private Block block_mere;
+    private Block blockMere;
+    @Column(name = "date_production", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime dateProduction;
 
 }

@@ -1,94 +1,208 @@
 <!DOCTYPE html>
-<html lang="fr" xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transformation des Produits</title>
+    <title>Create Transformation</title>
     <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/all.min.css}" rel="stylesheet">
+    <style>
+        .container {
+            background-color: #f8f9fa;
+            padding: 2rem 0;
+        }
+
+        .card {
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+
+        .btn-primary {
+            padding: 0.5rem 2rem;
+        }
+
+        .section-title {
+            position: relative;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            color: #0d6efd;
+        }
+
+        .section-title:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 4px;
+            height: 100%;
+            background-color: #0d6efd;
+            border-radius: 2px;
+        }
+    </style>
 </head>
 <body>
-
+<div th:insert="~{fragments/navbar :: navbar}"></div>
 <div class="container">
-    <h1>Ajouter des Transactions de Transformation</h1>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-body p-4 p-lg-5">
+                    <h1 class="text-center mb-4">
+                        <i class="fas fa-exchange-alt text-primary me-2"></i>
+                        Nouvelle Transformation
+                    </h1>
 
-    <div class="form-group">
-        <label for="blockSelect">Block</label>
-        <select id="blockSelect" class="form-control" required>
-            <option value="" selected disabled>Sélectionner un block</option>
-            <option th:each="block : ${blocks}" th:value="${block.id}" th:text="Block num ${block.id}"></option>
-        </select>
-    </div>
-    <!-- Formulaire d'ajout de transaction -->
-    <div class="form-group">
-        <label for="produitSelect">Produit</label>
-        <select id="produitSelect" class="form-control" required>
-            <option value="" selected disabled>Sélectionner un produit</option>
-            <option th:each="produit : ${produits}" th:value="${produit.id}" th:text="${produit.nom}"></option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label for="quantityInput">Quantité</label>
-        <input type="number" id="quantityInput" class="form-control" min="1" placeholder="Quantité" required>
-    </div>
-    <button type="button" onclick="addTransaction()" class="btn btn-primary mt-3">Ajouter la transaction</button>
+                    <form th:action="@{/save-transformation}" th:object="${transformation}" method="post" class="needs-validation" novalidate>
 
-    <!-- Liste des transactions ajoutées -->
-    <h3 class="mt-4">Liste des transactions</h3>
-    <ul id="transactionList" class="list-group mb-3">
-        <!-- Les transactions ajoutées s'afficheront ici -->
-    </ul>
+                        <!-- Block Selection -->
+                        <div class="mb-4">
+                            <label for="mere" class="form-label">
+                                <i class="fas fa-cube me-2"></i>Block:
+                            </label>
+                            <select class="form-select" th:field="*{block.id}" id="mere" required>
+                                <option value="">Sélectionner un block</option>
+                                <option th:each="blockIter : ${blocks}"
+                                        th:value="${blockIter.id}"
+                                        th:text="${blockIter.getId()}">
+                                </option>
+                            </select>
+                        </div>
 
-    <!-- Bouton pour valider et envoyer toutes les transactions -->
-    <button type="button" onclick="submitTransactions()" class="btn btn-success">Valider</button>
+                        <!-- Date Transformation -->
+                        <div class="mb-4">
+                            <label for="dateProduction" class="form-label">
+                                <i class="far fa-calendar-alt me-2"></i>Date de production
+                            </label>
+                            <input type="datetime-local"
+                                   class="form-control"
+                                   th:field="*{dateTransformation}"
+                                   id="dateProduction"
+                                   required>
+                        </div>
+
+                        <!-- Reste Block Dimensions -->
+                        <h3 class="section-title">
+                            <i class="fas fa-ruler-combined me-2"></i>
+                            Dimensions du Bloc Restant
+                        </h3>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number"
+                                           step="0.01"
+                                           class="form-control"
+                                           th:field="*{reste.longueur}"
+                                           id="resteLongueur"
+                                           placeholder="Longueur">
+                                    <label for="resteLongueur">
+                                        <i class="fas fa-arrows-alt-h me-2"></i>Longueur
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number"
+                                           step="0.01"
+                                           class="form-control"
+                                           th:field="*{reste.largeur}"
+                                           id="resteLargeur"
+                                           placeholder="Largeur">
+                                    <label for="resteLargeur">
+                                        <i class="fas fa-arrows-alt-v me-2"></i>Largeur
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-floating">
+                                    <input type="number"
+                                           step="0.01"
+                                           class="form-control"
+                                           th:field="*{reste.epaisseur}"
+                                           id="resteEpaisseur"
+                                           placeholder="Épaisseur">
+                                    <label for="resteEpaisseur">
+                                        <i class="fas fa-compress-alt me-2"></i>Épaisseur
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FormUsuelle Quantities -->
+                        <h3 class="section-title">
+                            <i class="fas fa-list-alt me-2"></i>
+                            Quantités par Forme Usuelle
+                        </h3>
+                        <div class="row g-3">
+                            <th:block th:each="detail, iterStat : ${produits}">
+                                <div class="col-md-6">
+                                    <div class="form-floating">
+                                        <input type="hidden"
+                                               th:field="*{transformationDetail[__${iterStat.index}__].produit.id}"
+                                                th:value="${detail.id}">
+                                        <input type="hidden"
+                                               th:field="*{transformationDetail[__${iterStat.index}__].produit.longueur}"
+                                               th:value="${detail.longueur}">
+                                        <input type="hidden"
+                                               th:field="*{transformationDetail[__${iterStat.index}__].produit.largeur}"
+                                               th:value="${detail.largeur}">
+                                        <input type="hidden"
+                                               th:field="*{transformationDetail[__${iterStat.index}__].produit.epaisseur}"
+                                               th:value="${detail.epaisseur}">
+                                        <input type="number"
+                                               class="form-control"
+                                               th:field="*{transformationDetail[__${iterStat.index}__].quantite}"
+                                               th:id="'quantite' + ${iterStat.index}"
+                                               placeholder="Quantité">
+                                        <label th:for="'quantite' + ${iterStat.index}"
+                                               th:text="${detail.nom}">
+                                            <i class="fas fa-boxes me-2"></i>Product Name
+                                        </label>
+                                    </div>
+                                </div>
+                            </th:block>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>
+                                Enregistrer la transformation
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+
+<!-- Form Validation Script -->
 <script>
-    // Tableau pour stocker les transactions
-    const transactions = [];
-
-    function addTransaction() {
-        const produitId = document.getElementById('produitSelect').value;
-        const produitNom = document.getElementById('produitSelect').selectedOptions[0].text;
-        const quantity = document.getElementById('quantityInput').value;
-        const blockId = document.getElementById('blockSelect').value;
-
-        if (produitId && quantity) {
-            // Ajouter la transaction au tableau
-            const transaction = {"block_id": blockId,"produit_id": produitId,"quantite": quantity };
-            transactions.push(transaction);
-
-            // Afficher dans la liste
-            const transactionList = document.getElementById('transactionList');
-            const listItem = document.createElement('li');
-            listItem.className = 'list-group-item';
-            listItem.textContent = `Produit: ${produitNom}, Quantité: ${quantity}`;
-            transactionList.appendChild(listItem);
-
-            // Réinitialiser les champs
-            document.getElementById('quantityInput').value = '';
-        }
-    }
-
-    function submitTransactions() {
-        // Envoyer les transactions via POST
-        fetch('/save-transformation', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(transactions),
-        })
-            .then(response => {
-                if (response.ok) {
-                    alert('Transformation enregistrée avec succès !');
-                    window.location.reload(); // Recharger la page pour vider le formulaire
-                } else {
-                    alert('Erreur lors de l\'enregistrement.');
-                }
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms)
+            .forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
             })
-            .catch(error => console.error('Erreur:', error));
-    }
+    })()
 </script>
-
 </body>
 </html>

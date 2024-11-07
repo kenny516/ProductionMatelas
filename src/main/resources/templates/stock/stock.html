@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Information</title>
+    <!-- Bootstrap CSS -->
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/all.min.css}" rel="stylesheet"><style>
+        body {
+            background-color: #f8f9fa;
+            padding: 2rem;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .stock-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .stock-header {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .stock-content {
+            padding: 1.5rem;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-title {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-title i {
+            margin-right: 0.5rem;
+            color: #3498db;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .data-value {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .chosen-badge {
+            background-color: #28a745;
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .price-positive {
+            color: #28a745;
+        }
+
+        .price-negative {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments/navbar :: navbar}"></div>
+<div class="container-fluid">
+    <h1 class="page-title">
+        <i class="fas fa-boxes me-2"></i>
+        Information du Stock
+    </h1>
+
+    <div class="row" th:each="block, iterStat : ${blocks}">
+        <div class="col-12">
+            <div class="stock-card">
+                <div class="stock-header">
+                    <i class="fas fa-cube me-2"></i>
+                    Block ID: <span th:text="${block.id}"></span>
+                </div>
+
+                <div class="stock-content">
+                    <div class="row">
+                        <!-- Stock actuel -->
+                        <div class="col-md-3">
+                            <div class="info-section">
+                                <div class="info-title">
+                                    <i class="fas fa-info-circle"></i>
+                                    Stock Actuel
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Dimensions:</span>
+                                    <span class="data-value">
+                                        <span th:text="${block.longueur}"></span> x
+                                        <span th:text="${block.largeur}"></span> x
+                                        <span th:text="${block.epaisseur}"></span>
+                                    </span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Coût Production:</span>
+                                    <span class="data-value" th:text="${block.coutProduction}"></span>
+                                </div>
+                                <div class="data-row" th:if="${restelist[iterStat.index] != null}">
+                                    <span class="data-label">Dimensions Reste:</span>
+                                    <span class="data-value">
+                                            <span th:text="${restelist[iterStat.index].longueur}"></span> x
+                                            <span th:text="${restelist[iterStat.index].largeur}"></span> x
+                                            <span th:text="${restelist[iterStat.index].epaisseur}"></span>
+                                        </span>
+                                </div>
+                                <div class="data-row" th:if="${restelist[iterStat.index] != null}">
+                                    <span class="data-label">Coût Production:</span>
+                                    <span class="data-value" th:text="${restelist[iterStat.index].coutProduction}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- All Transformation -->
+                        <div class="col-md-3">
+                            <div class="info-section">
+                                <div class="info-title">
+                                    <i class="fas fa-exchange-alt"></i>
+                                    Transformations
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Prix Revient:</span>
+                                    <span class="data-value" th:text="${transformationDisplays[iterStat.index].prixRevient}"></span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Prix Vente:</span>
+                                    <span class="data-value" th:text="${transformationDisplays[iterStat.index].prixVente}"></span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Bénéfice:</span>
+                                    <span class="data-value" th:classappend="${transformationDisplays[iterStat.index].benefice >= 0 ? 'price-positive' : 'price-negative'}"
+                                          th:text="${transformationDisplays[iterStat.index].benefice}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Max bénéfice -->
+                        <div class="col-md-3">
+                            <div class="info-section">
+                                <div class="info-title">
+                                    <i class="fas fa-chart-line"></i>
+                                    Maximum Bénéfice
+                                </div>
+                                <div th:each="stockDisplay : ${maxBenef[iterStat.index]}">
+                                    <div class="data-row">
+                                        <span class="data-label">Produit:</span>
+                                        <span class="data-value" th:text="${stockDisplay.nomProduit}"></span>
+                                    </div>
+                                    <div class="data-row">
+                                        <span class="data-label">Quantité:</span>
+                                        <span class="data-value" th:text="${stockDisplay.quantite}"></span>
+                                    </div>
+                                    <div class="data-row">
+                                        <span class="data-label">Volume:</span>
+                                        <span class="data-value" th:text="${stockDisplay.volume}"></span>
+                                    </div>
+                                    <div class="data-row">
+                                        <span class="data-label">Prix Vente:</span>
+                                        <span class="data-value price-positive" th:text="${stockDisplay.prixVente}"></span>
+                                    </div>
+                                    <div class="data-row">
+                                        <span class="data-label">Prix Revient:</span>
+                                        <span class="data-value" th:text="${stockDisplay.prixRevient}"></span>
+                                    </div>
+                                    <span class="chosen-badge" th:if="${stockDisplay.estChoisit}">
+                                        <i class="fas fa-check me-1"></i>Choisi
+                                    </span>
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Min perte -->
+                        <div class="col-md-3">
+                            <div class="info-section">
+                                <div class="info-title">
+                                    <i class="fas fa-chart-bar"></i>
+                                    Minimum Perte
+                                </div>
+                                <div th:each="stockDisplay : ${minPerte[iterStat.index]}">
+                                    <div class="data-row">
+                                        <span class="data-label">Produit:</span>
+                                        <span class="data-value" th:text="${stockDisplay.nomProduit}"></span>
+                                    </div>
+                                    <div class="data-row">
+                                        <span class="data-label">Quantité:</span>
+                                        <span class="data-value" th:text="${stockDisplay.quantite}"></span>
+                                    </div>
+                                    <div class="data-row">
+                                        <span class="data-label">Volume:</span>
+                                        <span class="data-value" th:text="${stockDisplay.volume}"></span>
+                                    </div>
+                                    <div class="data-row">
+                                        <span class="data-label">Prix Vente:</span>
+                                        <span class="data-value" th:text="${stockDisplay.prixVente}"></span>
+                                    </div>
+                                    <div class="data-row">
+                                        <span class="data-label">Prix Revient:</span>
+                                        <span class="data-value price-negative" th:text="${stockDisplay.prixRevient}"></span>
+                                    </div>
+                                    <span class="chosen-badge" th:if="${stockDisplay.estChoisit}">
+                                        <i class="fas fa-check me-1"></i>Choisi
+                                    </span>
+                                    <br>
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap Bundle with Popper -->
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

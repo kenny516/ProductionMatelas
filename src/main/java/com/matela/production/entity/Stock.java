@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Stock {
+public class Stock extends Dimension{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,11 +23,9 @@ public class Stock {
     @ManyToOne
     @JoinColumn(name = "block_id", nullable = false)
     private Block block;
-
-    @ManyToOne
-    @JoinColumn(name = "reste_id")
-    private Reste reste;
+    private Double coutProduction;
 
     @Column(name = "date_inventaire", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime dateInventaire;
+
 }

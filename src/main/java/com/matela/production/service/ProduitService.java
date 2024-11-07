@@ -1,5 +1,6 @@
 package com.matela.production.service;
 
+import com.matela.production.entity.Block;
 import com.matela.production.entity.Produit;
 import com.matela.production.repository.ProduitRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,5 +44,12 @@ public class ProduitService {
 
     public Double getVolume(Produit produit) {
         return produit.getLongueur() * produit.getLargeur() * produit.getEpaisseur();
+    }
+
+    public Double prixRevient(Block block,Double volumeProduit){
+        return volumeProduit * block.getCoutProduction()/ block.getVolume();
+    }
+    public Double prixRevientVolume(Double volumeBlock,Double cout_production,Double volumeProduit){
+        return volumeProduit * cout_production/ volumeBlock;
     }
 }

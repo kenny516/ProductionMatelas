@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -18,8 +19,8 @@ public class BlockService {
         return blockRepository.findAll();
     }
 
-    public Optional<Block> getBlockById(Long id) {
-        return blockRepository.findById(id);
+    public Block getBlockById(Long id) {
+        return blockRepository.findById(id).orElse(null);
     }
 
     public Block createBlock(Block block) {
@@ -40,4 +41,33 @@ public class BlockService {
         blockRepository.deleteById(id);
     }
 
+    public List<Block> getBlockValid() {
+        return blockRepository.getValidBlock();
+    }
+    public  Double coutProduction(Block block,Double volumeReste){
+        return volumeReste * block.getCoutProduction() / block.getVolume();
+    }
+
+    public List<Block> getAllResteBlock(Block block){
+        return blockRepository.getAllDescendants(block.getId());
+    }
+    public Block getLastFille(Block block){
+        return blockRepository.getLastFIlle(block.getId());
+    }
+
+    public Block getFirstFille(Block block){
+        Block block1 = blockRepository.getFirstFIlle(block.getId());
+        return Objects.requireNonNullElse(block1, block);
+    }
+
+    public double UpdatePR(Block block){
+        List<Block> blockList = getAllResteBlock(block);
+        double proportion = block.getCoutProduction() / blockList.getFirst().getCoutProduction();
+        for (Block blockIter : blockList) {
+            double prOld = blockIter.getCoutProduction();
+            blockIter.setCoutProduction(prOld*proportion);
+            updateBlock(blockIter.getId(),blockIter);
+        }
+        return proportion;
+    }
 }

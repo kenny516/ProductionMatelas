@@ -7,15 +7,15 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Entity
-@Table
+@Table(name = "transformation_detail")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class TransformationDetail {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @ManyToOne
     @JoinColumn(name = "transformation_id")
     Transformation transformation;
