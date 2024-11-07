@@ -8,20 +8,20 @@ import com.matela.production.repository.TransformationDetailRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 public class TransformationDetailService {
 
     private final TransformationDetailRepository transformationDetailRepository;
     private final ProduitService produitService;
+    private final BlockService blockService;
 
     @Autowired
-    public TransformationDetailService(TransformationDetailRepository transformationDetailRepository, ProduitService produitService) {
+    public TransformationDetailService(TransformationDetailRepository transformationDetailRepository, ProduitService produitService, BlockService blockService) {
         this.transformationDetailRepository = transformationDetailRepository;
         this.produitService = produitService;
+        this.blockService = blockService;
     }
 
     // Method to save a TransformationDetail
@@ -76,12 +76,20 @@ public class TransformationDetailService {
             List<TransformationDetail> transformationDetails = transformationDetailRepository.findTransformationByproduit(produit.getId());
             double prixRevient=0;
             double quantite = 0;
+            Set<Block> blockInitial = new HashSet<>();
             // formule moyenne ponderer (somme prixRevient / sommequantite)
             for (TransformationDetail transformationDetail : transformationDetails) {
                 prixRevient += transformationDetail.getPrixRevient();
                 quantite += transformationDetail.getQuantite();
+                Block bl = blockService.getFirstParent(transformationDetail.getTransformation().getBlock());
+                blockInitial.add(bl);
             }
+            prixRevient =  prixRevient/quantite;
             produitDisplay.setPrixRevient(prixRevient);
+            produitDisplay.setProduit(produit);
+            produitDisplay.setQuantite(quantite);
+            produitDisplay.setBlockInitial(blockInitial);
+            displays.add(produitDisplay);
         }
         return displays;
     }

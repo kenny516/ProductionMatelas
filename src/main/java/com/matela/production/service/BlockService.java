@@ -70,4 +70,8 @@ public class BlockService {
         }
         return proportion;
     }
+
+    public Block getFirstParent(Block block){
+        return blockRepository.getFirstParent(block.getId());
+    }
 }

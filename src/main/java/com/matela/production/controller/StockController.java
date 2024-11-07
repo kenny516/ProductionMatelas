@@ -1,6 +1,7 @@
 package com.matela.production.controller;
 
 import com.matela.production.entity.Block;
+import com.matela.production.entity.ProduitDisplay;
 import com.matela.production.entity.StockDisplay;
 import com.matela.production.entity.TransformationDisplay;
 import com.matela.production.service.BlockService;
@@ -22,6 +23,8 @@ public class StockController {
     private BlockService blockService;
     @Autowired
     private TransformationService transformationService;
+    @Autowired
+    private TransformationDetailService transformationDetailService;
     @Autowired
     private StockService stockService;
 
@@ -47,5 +50,13 @@ public class StockController {
         model.addAttribute("minPerte", minPerte);
 
         return "stock/stock";
+    }
+
+    @GetMapping("/transformations-liste")
+    public String listeProduitTransformer(Model model) {
+        List<ProduitDisplay> displays = new ArrayList<>();
+        displays = transformationDetailService.allTransformationGroupByProduit();
+        model.addAttribute("produits", displays);
+        return "stock/liste";
     }
 }

@@ -62,6 +62,22 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "FROM descendants", nativeQuery = true)
     public List<Block> getAllDescendants(@Param("id") Long id);
 
+    @Query(value = "WITH RECURSIVE ancestors AS (" +
+            "    SELECT * " +
+            "    FROM block " +
+            "    WHERE id = :id" +
+            "    UNION ALL " +
+            "    SELECT b.* " +
+            "    FROM block b " +
+            "    INNER JOIN ancestors a ON a.block_mere = b.id" +
+            ") " +
+            "SELECT * " +
+            "FROM ancestors " +
+            "ORDER BY date_production ASC " +
+            "LIMIT 1", nativeQuery = true)
+    public Block getFirstParent(@Param("id") Long id);
+
+
 
 
 }

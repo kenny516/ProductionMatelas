@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Produit Display</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/all.min.css}" rel="stylesheet">
+    <style>
+        body {
+
+        }
+
+        .page-title {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .product-table {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .product-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+            padding: 1rem;
+        }
+
+        .product-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .product-table td:last-child {
+            border-bottom: none;
+        }
+
+        .product-name {
+            font-weight: 500;
+            color: #3498db;
+        }
+
+        .block-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .block-list li {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .block-list li:before {
+            content: "- ";
+            color: #3498db;
+        }
+
+        .product-quantity {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .product-cost {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments/navbar :: navbar}"></div>
+<div class="container-fluid">
+    <h1 class="page-title">
+        <i class="fas fa-list-alt me-2"></i>
+        Liste des Produits
+    </h1>
+
+    <div class="product-table">
+        <table class="table mb-0">
+            <thead>
+            <tr>
+                <th>Produit</th>
+                <th>Prix de revient</th>
+                <th>Blocs initiaux</th>
+                <th>Quantité</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="produitDisplay : ${produits}">
+                <td>
+                    <span class="product-name" th:text="${produitDisplay.produit.nom}">Produit</span>
+                </td>
+                <td class="product-cost" th:text="${produitDisplay.prixRevient}">0.0</td>
+                <td>
+                    <ul class="block-list">
+                        <li th:each="block : ${produitDisplay.blockInitial}"
+                            th:text="${block.id}">Nom du bloc
+                        </li>
+                    </ul>
+                </td>
+                <td class="product-quantity" th:text="${produitDisplay.quantite}">0.0</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
