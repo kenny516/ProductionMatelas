@@ -106,7 +106,7 @@ public class TransformationService {
 
     public TransformationDisplay BeneficeTransformation(Long idBlock) {
         List<Transformation> transformations = getTransformationByblock(idBlock);
-        TransformationDisplay transformationDisplay = new TransformationDisplay();
+//        TransformationDisplay transformationDisplay = new TransformationDisplay();
         double prixVente = 0;
         double prixRevient = 0;
         double benefice = 0;

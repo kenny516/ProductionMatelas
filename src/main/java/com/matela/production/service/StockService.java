@@ -34,14 +34,6 @@ public class StockService {
         return stockRepository.save(stock);
     }
 
-//    public Optional<Stock> updateStock(Long id, Stock stockDetails) {
-//        return stockRepository.findById(id).map(stock -> {
-//            stock.setBlock(stockDetails.getBlock());
-//            stock.setReste(stockDetails.getReste());
-//            return stockRepository.save(stock);
-//        });
-//    }
-
     public void deleteStock(Long id) {
         stockRepository.deleteById(id);
     }
@@ -49,8 +41,6 @@ public class StockService {
     public Stock getLastValueBlock(Block block){
         return stockRepository.getBlockLastValue(block.getId());
     }
-
-
 
     public List<StockDisplay> getMaxBenefice(Block block) {
         List<StockDisplay> stockDisplays = new ArrayList<>();
@@ -118,6 +108,118 @@ public class StockService {
         }
         return stockDisplays;
     }
+
+    public List<StockDisplay> getStockDisplayByblokc(Block block) {
+        List<StockDisplay> stockDisplays = new ArrayList<>();
+        List<Produit> produitList = produitService.getAllProduits();
+        for (Produit produit : produitList) {
+            int nbProduit = (int) (block.getVolume() / produit.getVolume());
+            double volume = produit.getVolume() * nbProduit;
+            double prixVente = (produit.getPrixVente() * nbProduit);
+            double prixRevient = produitService.prixRevientVolume(block.getVolume(), block.getCoutProduction(), volume);
+            StockDisplay stockDisplay = new StockDisplay();
+            stockDisplay.setNomProduit(produit.getNom());
+            stockDisplay.setQuantite(nbProduit);
+            stockDisplay.setVolume(volume);
+            stockDisplay.setPrixVente(prixVente);
+            stockDisplay.setPrixRevient(prixRevient);
+            stockDisplay.setEstChoisit(false);
+            stockDisplays.add(stockDisplay);
+        }
+        return stockDisplays;
+    }
+
+//////////////////////////////
+    public List<StockDisplay> getStockDisplayForAllBlockValid(List<Block> blockList) {
+        List<StockDisplay> stockDisplays = new ArrayList<>();
+        List<Produit> produitList = produitService.getAllProduits();
+
+        for (Produit produit : produitList) {
+            int nbProduit = 0;
+            double volume = 0;
+            double prixVente = 0;
+            double prixRevient = 0;
+            for (Block block : blockList) {
+                nbProduit += (int) (block.getVolume() / produit.getVolume());
+                volume += produit.getVolume() * nbProduit;
+                prixVente += (produit.getPrixVente() * nbProduit);
+                prixRevient += produitService.prixRevientVolume(block.getVolume(), block.getCoutProduction(), volume);
+            }
+            StockDisplay stockDisplay = new StockDisplay();
+            stockDisplay.setNomProduit(produit.getNom());
+            stockDisplay.setQuantite(nbProduit);
+            stockDisplay.setVolume(volume);
+            stockDisplay.setPrixVente(prixVente);
+            stockDisplay.setPrixRevient(prixRevient);
+            stockDisplay.setEstChoisit(false);
+            stockDisplays.add(stockDisplay);
+        }
+        return stockDisplays;
+    }
+
+    public List<StockDisplay> setMinPerte(List<StockDisplay> listsStockDisplays){
+        double volumeUsed = 0.0;
+        int idChoisit = -1;
+        for (int i = 0; i < listsStockDisplays.size(); i++) {
+            listsStockDisplays.get(i).setEstChoisit(false);
+            if (listsStockDisplays.get(i).getVolume() > volumeUsed) {
+                volumeUsed = listsStockDisplays.get(i).getVolume();
+                idChoisit = i;
+            }
+        }
+        if (idChoisit >= 0) {
+            listsStockDisplays.get(idChoisit).setEstChoisit(true);
+        }
+        return listsStockDisplays;
+    }
+    public List<StockDisplay> setMaxBenefice(List<StockDisplay> listsStockDisplays){
+        double maxBenefice = 0.0;
+        int idChoisit = -1;
+        for (int i = 0; i < listsStockDisplays.size(); i++) {
+            listsStockDisplays.get(i).setEstChoisit(false);
+            double currentBenefice = listsStockDisplays.get(i).getPrixVente() / listsStockDisplays.get(i).getVolume();
+            if (currentBenefice > maxBenefice) {
+                maxBenefice = currentBenefice;
+                idChoisit = i;
+            }
+        }
+        if (idChoisit >= 0) {
+            listsStockDisplays.get(idChoisit).setEstChoisit(true);
+        }
+        return listsStockDisplays;
+    }
+    public StockDisplay getMinPerte(List<StockDisplay> listsStockDisplays){
+        double volumeUsed = 0.0;
+        int idChoisit = -1;
+        for (int i = 0; i < listsStockDisplays.size(); i++) {
+            listsStockDisplays.get(i).setEstChoisit(false);
+            if (listsStockDisplays.get(i).getVolume() > volumeUsed) {
+                volumeUsed = listsStockDisplays.get(i).getVolume();
+                idChoisit = i;
+            }
+        }
+        if (idChoisit >= 0) {
+            listsStockDisplays.get(idChoisit).setEstChoisit(true);
+        }
+        return listsStockDisplays.get(idChoisit);
+    }
+    public StockDisplay getMaxBenefice(List<StockDisplay> listsStockDisplays){
+        double maxBenefice = 0.0;
+        int idChoisit = -1;
+        for (int i = 0; i < listsStockDisplays.size(); i++) {
+            listsStockDisplays.get(i).setEstChoisit(false);
+            double currentBenefice = listsStockDisplays.get(i).getPrixVente() / listsStockDisplays.get(i).getVolume();
+            if (currentBenefice > maxBenefice) {
+                maxBenefice = currentBenefice;
+                idChoisit = i;
+            }
+        }
+        if (idChoisit >= 0) {
+            listsStockDisplays.get(idChoisit).setEstChoisit(true);
+        }
+        return listsStockDisplays.get(idChoisit);
+    }
+
 
 
 

@@ -4,6 +4,7 @@ CREATE DATABASE production_matelas;
 CREATE TABLE block
 (
     id              SERIAL PRIMARY KEY,
+    nom             VARCHAR(100),
     longueur        DECIMAL(10, 2),
     largeur         DECIMAL(10, 2),
     epaisseur       DECIMAL(10, 2),
@@ -63,6 +64,21 @@ CREATE TABLE stock
     cout_production DECIMAL(10, 2),
     date_inventaire TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- news table
+CREATE TABLE mvt_stock_produit
+(
+    id                SERIAL PRIMARY KEY,
+    produit_id        INTEGER REFERENCES produit (id),
+    entre             INTEGER   DEFAULT NULL,
+    sortie            INTEGER   DEFAULT NULL,
+    prix_revient      DECIMAL(10, 2),
+    prix_vente        DECIMAL(10, 2),
+    date_modifiaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+
 
 -- CREATE OR REPLACE VIEW stock_view AS
 -- SELECT s.*

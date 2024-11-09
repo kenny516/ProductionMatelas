@@ -52,11 +52,29 @@ public class StockController {
         return "stock/stock";
     }
 
+    @GetMapping("/stock_produit")
+    public String displayStockproduits(Model model) {
+        List<Block> blockList = blockService.getBlockValid();
+
+        List<StockDisplay> stockDisplays = stockService.getStockDisplayForAllBlockValid(blockList);
+        StockDisplay maxBenef = stockService.getMaxBenefice(stockDisplays);
+        StockDisplay minPerte = stockService.getMinPerte(stockDisplays);
+        List<ProduitDisplay> displaysProduit;
+        displaysProduit = transformationDetailService.allTransformationGroupByProduit();
+
+        model.addAttribute("produitStock", displaysProduit);
+        model.addAttribute("maxBenef", maxBenef);
+        model.addAttribute("minPerte", minPerte);
+        return "stock/liste";
+    }
+
+
+
     @GetMapping("/transformations-liste")
     public String listeProduitTransformer(Model model) {
         List<ProduitDisplay> displays = new ArrayList<>();
         displays = transformationDetailService.allTransformationGroupByProduit();
-        model.addAttribute("produits", displays);
+        model.addAttribute("produitsStock", displays);
         return "stock/liste";
     }
 }

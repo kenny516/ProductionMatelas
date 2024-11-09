@@ -59,6 +59,7 @@
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="blockDropdown">
                         <li><a class="dropdown-item" th:href="@{/form-block}"><i class="fas fa-plus-circle me-2"></i> Nouveau Block</a></li>
                         <li><a class="dropdown-item" th:href="@{/blocks}"><i class="fas fa-list me-2"></i> Liste des Blocks</a></li>
+                        <li><a class="dropdown-item" th:href="@{/update-block-form}"><i class="fas fa-list me-2"></i> Update Block</a></li>
                     </ul>
                 </li>
 
@@ -68,7 +69,7 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="produitDropdown">
                         <li><a class="dropdown-item" th:href="@{/form-prduit}"><i class="fas fa-plus-circle me-2"></i> Nouveau produit</a></li>
-                        <li><a class="dropdown-item" th:href="@{/produits}"><i class="fas fa-list me-2"></i> Liste des produit</a></li>
+                        <li><a class="dropdown-item" href="#"><i class="fas fa-list me-2"></i> Liste des produit</a></li>
                     </ul>
                 </li>
 
@@ -79,20 +80,18 @@
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="transformationDropdown">
                         <li><a class="dropdown-item" th:href="@{/form-transformation}"><i class="fas fa-plus-circle me-2"></i> Nouvelles Transformation</a></li>
-                        <li><a class="dropdown-item" th:href="@{/transformations-liste}"><i class="fas fa-list me-2"></i> Liste des Transformations</a></li>
                     </ul>
                 </li>
 
                 <!-- Stock Link -->
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/stock}">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="stockDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-warehouse"></i> Stock
                     </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" th:href="@{/update-block-form}">
-                        <i class="fas fa-warehouse"></i> UpdateBlock
-                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="transformationDropdown">
+                        <li><a class="dropdown-item" th:href="@{/stock_produit}"><i class="fas fa-list me-2"></i> Liste des produit stock</a></li>
+                        <li><a class="dropdown-item" th:href="@{/stock}"><i class="fas fa-plus-circle me-2"></i>Stock by block</a></li>
+                    </ul>
                 </li>
             </ul>
         </div>

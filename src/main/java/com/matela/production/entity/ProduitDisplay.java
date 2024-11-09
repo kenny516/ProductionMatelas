@@ -16,5 +16,16 @@ public class ProduitDisplay {
     private double prixRevient;
     private Set<Block> blockInitial;
     private double quantite;
+
+
+    public double getPrixVente(){
+        return produit.getPrixVente()*quantite;
+    }
+    public double getBenefice(){
+        return getPrixVente()-prixRevient;
+    }
+    public double getVolume(){
+        return produit.getVolume()*quantite;
+    }
 }
 

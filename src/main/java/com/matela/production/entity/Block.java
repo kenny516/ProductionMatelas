@@ -19,6 +19,7 @@ public class Block extends Dimension{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private Double coutProduction;
     @ManyToOne
     @JoinColumn(name = "block_mere")
