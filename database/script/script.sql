@@ -1,6 +1,9 @@
 CREATE DATABASE production_matelas;
 \c production_matelas;
 
+
+
+
 CREATE TABLE block
 (
     id              SERIAL PRIMARY KEY,
@@ -77,7 +80,11 @@ CREATE TABLE mvt_stock_produit
     date_modifiaction TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-
+CREATE TABLE teta
+(
+    id   SERIAL PRIMARY KEY,
+    value DECIMAL(10, 2)
+);
 
 
 -- CREATE OR REPLACE VIEW stock_view AS

@@ -36,6 +36,7 @@
     </style>
 </head>
 <body>
+<div th:insert="~{fragments/navbar :: navbar}"></div>
 <div class="status-container">
     <div th:if="${status == 'success'}">
         <i class="fas fa-check-circle text-success status-icon"></i>
@@ -46,7 +47,7 @@
     <div th:if="${status == 'error'}">
         <i class="fas fa-times-circle text-danger status-icon"></i>
         <h3 class="text-danger status-message">Submission Failed!</h3>
-        <p>Oops! There was an error submitting your form. Please try again later.</p>
+        <p th:text="${message}"></p>
     </div>
 
     <div th:if="${status == 'info'}">

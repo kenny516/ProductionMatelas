@@ -18,7 +18,9 @@ public class TransformationService {
     @Autowired
     private TransformationRepository transformationRepository;
     @Autowired
-    private TransformationDetailRepository transformationDetailRepository;
+    TetaService tetaService;
+//    @Autowired
+//    private TransformationDetailRepository transformationDetailRepository;
     @Autowired
     private TransformationDetailService transformationDetailService;
 
@@ -53,39 +55,6 @@ public class TransformationService {
         return transformationRepository.findByBlock_Id(id);
     }
 
-//    public Double beneficeGetByTransformation(List<Transformation> transformation) {
-//        double benefice = 0.0;
-//        for (Transformation value : transformation) {
-//            benefice += (value.getProduit().getPrixVente() - value.getPrixRevient()) * value.getQuantite();
-//        }
-//        return benefice;
-//    }
-
-//    public Double beneficeGetByTransformationBlock(Long id) {
-//        List<Transformation> transformations = getTransformationByblock(id);
-//        return beneficeGetByTransformation(transformations);
-//    }
-
-    // le calcul est effectuer en volume verifier qu'il y a une transformation
-//    public boolean verificationReste(List<Transformation> transformation, Double resteForm, Double teta) {
-//        double resteCalc = 0.0;
-//        double tetaValue = (transformation.getFirst().getBlock().getVolume() * teta) / 100;
-//        for (Transformation value : transformation) {
-//            resteCalc += value.getProduit().getVolume() * value.getQuantite();
-//        }
-//        if (resteForm < transformation.getFirst().getBlock().getVolume()) {
-//            return Math.abs(resteCalc - resteForm) <= tetaValue;
-//        }
-//        return false;
-//    }
-//
-//    public Double prixRevient(Transformation transformation) {
-//        double prixRevientBlock = transformation.getBlock().getCoutProduction();
-//        double volumeBlock = transformation.getBlock().getVolume();
-//        double volumeReste = transformation.getReste().getVolume();
-//        return (volumeReste * prixRevientBlock) / volumeBlock;
-//    }
-
     public boolean validateTransformation(Transformation transformation) {
         double blockVolume = transformation.getBlock().getVolume();
         double produitVolume = transformationDetailService.volumeTransformationDetail(transformation.getTransformationDetail());
@@ -95,7 +64,8 @@ public class TransformationService {
         double resteCalc = blockVolume - produitVolume;
         double resteForm = transformation.getReste().getVolume();
         System.out.println("restForm " + resteForm);
-        double tetaValue = (blockVolume * 30) / 100;
+        double teta = tetaService.getALl().getFirst().getValue();
+        double tetaValue = (blockVolume * teta) / 100;
         System.out.println("resteCalc " + resteCalc);
         System.out.println("resteCalc " + tetaValue);
         if (resteForm < blockVolume) {

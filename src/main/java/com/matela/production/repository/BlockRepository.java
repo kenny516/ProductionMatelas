@@ -15,7 +15,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             SELECT * FROM block WHERE id not in (
                 SELECT block_mere FROM block WHERE block_mere is not NULL
                 );""",nativeQuery = true)
-    public List<Block> getValidBlock();
+    List<Block> getValidBlock();
 
     @Query(value = "WITH RECURSIVE descendants AS (" +
             "    SELECT * " +
@@ -30,7 +30,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "FROM descendants " +
             "ORDER BY date_production DESC " +
             "LIMIT 1", nativeQuery = true)
-    public Block getLastFIlle(@Param("id") Long id);
+    Block getLastFIlle(@Param("id") Long id);
 
     @Query(value = "WITH RECURSIVE descendants AS (" +
             "    SELECT *, 1 AS level " +
@@ -46,7 +46,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "WHERE level = 2 " +  // Sélectionner le deuxième enfant
             "ORDER BY date_production ASC " +
             "LIMIT 1", nativeQuery = true)
-    public Block getFirstFIlle(@Param("id") Long id);
+    Block getFirstFIlle(@Param("id") Long id);
 
 
     @Query(value = "WITH RECURSIVE descendants AS (" +
@@ -60,7 +60,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             ") " +
             "SELECT * " +
             "FROM descendants", nativeQuery = true)
-    public List<Block> getAllDescendants(@Param("id") Long id);
+    List<Block> getAllDescendants(@Param("id") Long id);
 
     @Query(value = "WITH RECURSIVE ancestors AS (" +
             "    SELECT * " +
@@ -75,7 +75,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "FROM ancestors " +
             "ORDER BY date_production ASC " +
             "LIMIT 1", nativeQuery = true)
-    public Block getFirstParent(@Param("id") Long id);
+    Block getFirstParent(@Param("id") Long id);
 
 
 
