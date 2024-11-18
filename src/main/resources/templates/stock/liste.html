@@ -105,22 +105,25 @@
 <body>
 <div th:insert="~{fragments/navbar :: navbar}"></div>
 
+<H1>ETU 002409</H1>
+<h2>20 = block_1</h2>
+<h2>21 = block_2</h2>
 <div class="container py-4">
     <!-- Stats Cards -->
     <div class="row g-4 mb-4">
         <!-- Total Products Card -->
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0">Total Produits</h5>
-                    <i class="fas fa-warehouse stat-icon"></i>
-                </div>
-                <div class="card-body">
-                    <h2 class="display-4 mb-0" th:text="${#lists.size(produitStock)}">0</h2>
-                    <p class="text-muted">produits en stock</p>
-                </div>
-            </div>
-        </div>
+<!--        <div class="col-md-4">-->
+<!--            <div class="card h-100">-->
+<!--                <div class="card-header d-flex justify-content-between align-items-center">-->
+<!--                    <h5 class="mb-0">Total Produits</h5>-->
+<!--                    <i class="fas fa-warehouse stat-icon"></i>-->
+<!--                </div>-->
+<!--                <div class="card-body">-->
+<!--                    <h2 class="display-4 mb-0" th:text="${#lists.size(produitStock)}">0</h2>-->
+<!--                    <p class="text-muted">produits en stock</p>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
 
         <!-- Maximum Profit Card -->
         <div class="col-md-4">
@@ -148,9 +151,9 @@
                             <span class="fw-bold" th:text="${maxBenef.volume + ' m³'}">0.00 m³</span>
                         </div>
                     </div>
-                    <p class="text-success mt-3 mb-0">
+                    <h2 class="text-success mt-3 mb-0">
                         Produit: <strong th:text="${maxBenef.nomProduit}">N/A</strong>
-                    </p>
+                    </h2>
                 </div>
             </div>
         </div>
@@ -181,9 +184,9 @@
                             <span class="fw-bold" th:text="${minPerte.volume + ' m³'}">0.00 m³</span>
                         </div>
                     </div>
-                    <p class="text-danger mt-3 mb-0">
+                    <h2 class="text-danger mt-3 mb-0">
                         Produit: <strong th:text="${minPerte.nomProduit}">N/A</strong>
-                    </p>
+                    </h2>
                 </div>
             </div>
         </div>
@@ -204,6 +207,7 @@
                         <th><i class="fas fa-tag me-2"></i>Nom du Produit</th>
                         <th><i class="fas fa-boxes me-2"></i>Quantité</th>
                         <th><i class="fas fa-vector-square me-2"></i>Volume</th>
+                        <th><i class="fas fa-coins me-2"></i>Prix de Revient unitaire</th>
                         <th><i class="fas fa-coins me-2"></i>Prix de Revient</th>
                         <th><i class="fas fa-euro-sign me-2"></i>Prix de Vente</th>
                         <th><i class="fas fa-industry me-2"></i>Origine</th>
@@ -219,6 +223,7 @@
                         </td>
                         <td th:text="${produitDisplay.volume + ' m³'}">0.0</td>
                         <td th:text="${produitDisplay.prixRevient + ' Ar'}">0.00</td>
+                        <td th:text="${produitDisplay.prixRevient*produitDisplay.quantite + ' Ar'}">0.00</td>
                         <td th:text="${produitDisplay.prixVente + ' Ar'}">0.00</td>
                         <td>
                             <div class="d-flex gap-2 flex-wrap">

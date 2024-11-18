@@ -19,7 +19,7 @@ public class TransformationService {
     private TransformationRepository transformationRepository;
     @Autowired
     TetaService tetaService;
-//    @Autowired
+    //    @Autowired
 //    private TransformationDetailRepository transformationDetailRepository;
     @Autowired
     private TransformationDetailService transformationDetailService;
@@ -81,31 +81,42 @@ public class TransformationService {
         double prixRevient = 0;
         double benefice = 0;
         for (Transformation transformation : transformations) {
-            prixRevient += transformation.getBlock().getCoutProduction() -transformation.getReste().getCoutProduction();
+            prixRevient += transformation.getBlock().getCoutProduction() - transformation.getReste().getCoutProduction();
             prixVente += transformationDetailService.prixVente(transformation.getTransformationDetail());
-            benefice+= prixVente - prixRevient;
+            benefice += prixVente - prixRevient;
         }
-        return new TransformationDisplay(prixRevient,prixVente,benefice);
+        return new TransformationDisplay(prixRevient, prixVente, benefice);
     }
 
-    public void updateRevient(List<Block> blockList,double proportion){
+    public void updateRevient(List<Block> blockList, double proportion) {
         for (Block block : blockList) {
-            List<Transformation> transformations =  getTransformationByblock(block.getId());
-            for (Transformation transformation : transformations){
-                for (TransformationDetail transformationDetail : transformation.getTransformationDetail()){
+            List<Transformation> transformations = getTransformationByblock(block.getId());
+            for (Transformation transformation : transformations) {
+                for (TransformationDetail transformationDetail : transformation.getTransformationDetail()) {
                     double prNew = transformationDetail.getPrixRevient() * proportion;
                     transformationDetail.setPrixRevient(prNew);
-                    transformationDetailService.update(transformationDetail.getId(),transformationDetail);
+                    transformationDetailService.update(transformationDetail.getId(), transformationDetail);
                 }
             }
         }
     }
 
 
+    public String getUnit(String value) {
+        return value.endsWith("cm") ? "cm" : "m";
+    }
 
+    public double getValue(String value) {
+        String unit = getUnit(value);
+        return unit.equals("cm")
+                ? Double.parseDouble(value.replace("cm", "").trim())
+                : Double.parseDouble(value.replace("m", "").trim());
+    }
 
-
-
+    public double convertToMeters(String value) {
+        double numericalValue = getValue(value);
+        return getUnit(value).equals("cm") ? numericalValue / 100 : numericalValue;
+    }
 
 
 }

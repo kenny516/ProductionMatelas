@@ -3,6 +3,29 @@ CREATE DATABASE production_matelas;
 
 
 
+CREATE TABLE matierePremiere
+(
+    id         SERIAL PRIMARY KEY,
+    nom        VARCHAR(100),
+    prix_achat DECIMAL(10, 2)
+);
+
+CREATE TABLE achatMatierePremier(
+  id SERIAL PRIMARY KEY,
+  date_achat DATE DEFAULT CURRENT_DATE
+);
+CREATE TABLE achatMatierePremierDetail
+(
+    id                SERIAL PRIMARY KEY,
+    achat_matiere_id  INTEGER REFERENCES achatMatierePremier (id),
+    matiere_premiere_id INTEGER REFERENCES matierePremiere (id),
+    quantite          INTEGER,
+    prix_achat        DECIMAL(10, 2)
+);
+
+
+
+
 
 CREATE TABLE block
 (
@@ -15,6 +38,8 @@ CREATE TABLE block
     block_mere      INTEGER REFERENCES block (id) DEFAULT null,
     date_production TIMESTAMP                     DEFAULT CURRENT_TIMESTAMP
 );
+
+
 
 
 -- CREATE TABLE reste

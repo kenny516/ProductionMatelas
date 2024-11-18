@@ -140,10 +140,12 @@ public class StockService {
             double prixVente = 0;
             double prixRevient = 0;
             for (Block block : blockList) {
-                nbProduit += (int) (block.getVolume() / produit.getVolume());
-                volume += produit.getVolume() * nbProduit;
-                prixVente += (produit.getPrixVente() * nbProduit);
-                prixRevient += produitService.prixRevientVolume(block.getVolume(), block.getCoutProduction(), volume);
+                int nbProduitActu = (int) (block.getVolume() / produit.getVolume());
+                double volumeActu = produit.getVolume() * nbProduitActu;
+                nbProduit += nbProduitActu;
+                volume += produit.getVolume() * nbProduitActu;
+                prixVente += (produit.getPrixVente() * nbProduitActu);
+                prixRevient += produitService.prixRevientVolume(block.getVolume(), block.getCoutProduction(), volumeActu);
             }
             StockDisplay stockDisplay = new StockDisplay();
             stockDisplay.setNomProduit(produit.getNom());

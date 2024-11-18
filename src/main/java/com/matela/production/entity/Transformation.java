@@ -29,6 +29,14 @@ public class Transformation {
     @Column(name = "date_transformation", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
     private LocalDateTime dateTransformation;
 
+    @Transient
+    private String longueur;
+    @Transient
+    private String largeur;
+    @Transient
+    private String epaisseur;
+
+
     @OneToMany
     @JoinColumn(name = "transformation_id")
     List<TransformationDetail> transformationDetail;

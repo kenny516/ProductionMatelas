@@ -8,10 +8,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 
-import javax.swing.text.html.Option;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Controller
 public class TransformationController {
@@ -25,6 +23,8 @@ public class TransformationController {
     private BlockService blockService;
     @Autowired
     private StockService stockService;
+    @Autowired
+    private TetaService tetaService;
 
     @GetMapping("/form-transformation")
     public String formTransformation(Model model) {
@@ -49,12 +49,23 @@ public class TransformationController {
     public String saveTransformation(Transformation transformation, Model model) {
         Block block = blockService.getBlockById(transformation.getBlock().getId());
         transformation.setBlock(block);
+
+        double longuer = transformationService.convertToMeters(transformation.getLongueur());
+        double largeur =  transformationService.convertToMeters(transformation.getLargeur());
+        double epaisseur =  transformationService.convertToMeters(transformation.getEpaisseur());
+
+        transformation.setReste(new Block());
+        transformation.getReste().setLongueur(longuer);
+        transformation.getReste().setLargeur(largeur);
+        transformation.getReste().setEpaisseur(epaisseur);
+
+
         if (transformationService.validateTransformation(transformation)){
             Block reste = new Block();
             reste.setCoutProduction(blockService.coutProduction(block,transformation.getReste().getVolume()));
-            reste.setLongueur(transformation.getReste().getLongueur());
-            reste.setLargeur(transformation.getReste().getLargeur());
-            reste.setEpaisseur(transformation.getReste().getEpaisseur());
+            reste.setLongueur(longuer);
+            reste.setLargeur(largeur);
+            reste.setEpaisseur(epaisseur);
             reste.setBlockMere(block);
             reste.setDateProduction(transformation.getDateTransformation());
             reste = blockService.createBlock(reste);
@@ -82,6 +93,7 @@ public class TransformationController {
         }else
         {
             System.out.println("not work");
+            model.addAttribute("message", "Transformation not valid a teta "+tetaService.getALl().getFirst().getValue()+"% ");
             model.addAttribute("status", "error");
             return "result-status";
         }
