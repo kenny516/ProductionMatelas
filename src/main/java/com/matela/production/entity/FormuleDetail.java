@@ -28,12 +28,12 @@ public class FormuleDetail {
     private Formule formule;
 
     @NotNull
-    @Column(name = "quantite", nullable = false, precision = 10, scale = 2)
+    @Column(name = "quantite")
     private Double quantite;
 
     @Size(max = 50)
     @NotNull
-    @Column(name = "unite", nullable = false, length = 50)
+    @Column(name = "unite")
     private String unite;
 
 }

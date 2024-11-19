@@ -53,7 +53,10 @@ class BlockServiceTest {
                 csvContentMachine.getBytes()
         );
 
-        machineService.importMachinesFromCsv(fileMachine);
+        //machineService.importMachinesFromCsv(fileMachine);
+
+        blockService.generateRandomBlocks(1000000,5000,0,3);
+        blockService.generateRandomBlocksQueryNative(1000000,5000,0,3);
 
         verify(machineRepository, times(1)).saveAll(anyList());
     }

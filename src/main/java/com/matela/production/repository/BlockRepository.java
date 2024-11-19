@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -87,8 +88,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
     @Query(value = "INSERT INTO block (id, nom, longueur, largeur, epaisseur, cout_production, volume, machine_id, block_mere, date_production) " +
             "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)", nativeQuery = true)
     void insertBlock(Long id, String nom, Double longueur, Double largeur, Double epaisseur, Double coutProduction,
-                     Double volume, Long machine, Long blockMere, String dateProduction);
-
+                     Double volume, Long machine, Long blockMere, LocalDate dateProduction);
 
 
 }

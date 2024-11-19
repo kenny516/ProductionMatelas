@@ -25,11 +25,11 @@ public class MatierePremiere {
 
     @Size(max = 100)
     @NotNull
-    @Column(name = "nom", nullable = false, length = 100)
+    @Column(name = "nom")
     private String nom;
 
     @NotNull
-    @Column(name = "prix_achat", nullable = false, precision = 10, scale = 2)
+    @Column(name = "prix_achat")
     private Double prixAchat;
 
     @OneToMany(mappedBy = "matierePremiere")

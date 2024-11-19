@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "block")
@@ -29,7 +29,7 @@ public class Block extends Dimension{
     @JoinColumn(name = "block_mere")
     private Block blockMere;
     @Column(name = "date_production", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    private LocalDateTime dateProduction;
+    private LocalDate dateProduction;
 
     @Column(name = "volume")
     private Double volumeb;
@@ -39,10 +39,6 @@ public class Block extends Dimension{
     @JoinColumn(name = "machine_id", nullable = false)
     private Machine machine;
 
-
-    public Block() {
-
-    }
 
 
 

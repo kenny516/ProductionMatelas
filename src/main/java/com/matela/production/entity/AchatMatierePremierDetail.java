@@ -32,11 +32,11 @@ public class AchatMatierePremierDetail {
     private MatierePremiere matierePremiere;
 
     @NotNull
-    @Column(name = "quantite", nullable = false, precision = 10, scale = 2)
+    @Column(name = "quantite")
     private Double quantite;
 
     @NotNull
-    @Column(name = "prix_achat", nullable = false, precision = 10, scale = 2)
+    @Column(name = "prix_achat")
     private Double prixAchat;
 
 }
