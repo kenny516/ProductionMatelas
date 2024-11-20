@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard des Machines</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/all.min.css}" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .page-title {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 3px solid #3498db;
+        }
+
+        .machine-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .machine-header {
+            background: linear-gradient(135deg, #3498db, #2c3e50);
+            color: white;
+            padding: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .machine-content {
+            padding: 1.5rem;
+        }
+
+        .info-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .info-title {
+            color: #2c3e50;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .info-title i {
+            margin-right: 0.5rem;
+            color: #3498db;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .data-value {
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .cost-positive {
+            color: #28a745;
+        }
+
+        .cost-negative {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments/navbar :: navbar}"></div>
+<div class="container-fluid">
+    <h1 class="page-title">
+        <i class="fas fa-industry me-2"></i>
+        Dashboard des Machines
+    </h1>
+
+    <div class="row" th:each="machine : ${machines}">
+        <div class="col-12">
+            <div class="machine-card">
+                <div class="machine-header">
+                    <i class="fas fa-cogs me-2"></i>
+                    Machine ID: <span th:text="${machine.machineId}"></span>
+                </div>
+
+                <div class="machine-content">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="info-section">
+                                <div class="info-title">
+                                    <i class="fas fa-chart-pie"></i>
+                                    Volume de Production
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Volume:</span>
+                                    <span class="data-value" th:text="${machine.volume}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="info-section">
+                                <div class="info-title">
+                                    <i class="fas fa-dollar-sign"></i>
+                                    Coût de Production
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Coût Réel:</span>
+                                    <span class="data-value" th:text="${machine.coutProduction}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="info-section">
+                                <div class="info-title">
+                                    <i class="fas fa-calculator"></i>
+                                    Coût Théorique
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Coût Théorique:</span>
+                                    <span class="data-value" th:text="${machine.coutTheorique}"></span>
+                                </div>
+                                <div class="data-row">
+                                    <span class="data-label">Différence:</span>
+                                    <span class="data-value"
+                                          th:text="${#numbers.abs(machine.coutProduction - machine.coutTheorique)}"
+                                          th:classappend="${machine.coutProduction - machine.coutTheorique <= 0 ? 'cost-positive' : 'cost-negative'}">
+</span>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

@@ -1,31 +1,65 @@
+DROP DATABASE production_matelas;
 CREATE DATABASE production_matelas;
 \c production_matelas;
 
 
-
+-- Table des matières premières
 CREATE TABLE matierePremiere
 (
     id         SERIAL PRIMARY KEY,
-    nom        VARCHAR(100),
-    prix_achat DECIMAL(10, 2)
+    nom        VARCHAR(100)   NOT NULL,
+    prix_achat DECIMAL(10, 2) NOT NULL
 );
 
-CREATE TABLE achatMatierePremier(
-  id SERIAL PRIMARY KEY,
-  date_achat DATE DEFAULT CURRENT_DATE
-);
-CREATE TABLE achatMatierePremierDetail
+-- Table des formules
+CREATE TABLE formule
 (
-    id                SERIAL PRIMARY KEY,
-    achat_matiere_id  INTEGER REFERENCES achatMatierePremier (id),
-    matiere_premiere_id INTEGER REFERENCES matierePremiere (id),
-    quantite          INTEGER,
-    prix_achat        DECIMAL(10, 2)
+    id          SERIAL PRIMARY KEY,
+    nom         VARCHAR(100) NOT NULL,
+    description TEXT
+);
+
+CREATE TABLE formuleDetail
+(
+    id                  SERIAL PRIMARY KEY,
+    formule_id          INTEGER REFERENCES formule (id) ON DELETE CASCADE,
+    matiere_premiere_id INTEGER REFERENCES matierePremiere (id) ON DELETE CASCADE,
+    quantite            DECIMAL(10, 2) NOT NULL,
+    unite               VARCHAR(50)    NOT NULL
+);
+
+CREATE TABLE matierePremiereSimple
+(
+    id         SERIAL PRIMARY KEY,
+    nom        VARCHAR(100)   NOT NULL,
+    quantite   DECIMAL(10, 2),
+    prix_achat DECIMAL(10, 2) NOT NULL
 );
 
 
+CREATE TABLE achatMatierePremier
+(
+    id                  SERIAL PRIMARY KEY,
+    matiere_premiere_id INTEGER REFERENCES matierePremiere (id) ON DELETE CASCADE,
+    quantite            DECIMAL(10, 2) NOT NULL,
+    prix_achat          DECIMAL(10, 2) NOT NULL,
+    date_achat          DATE DEFAULT CURRENT_DATE
+);
+
+CREATE TABLE sortie
+(
+    id               SERIAL PRIMARY KEY,
+    id_achatmateriel INTEGER REFERENCES achatMatierePremier,
+    quantite         DECIMAL(10, 2),
+    date_sortie      DATE DEFAULT CURRENT_DATE
+);
 
 
+CREATE TABLE machine
+(
+    id  SERIAL PRIMARY KEY,
+    nom VARCHAR(100)
+);
 
 CREATE TABLE block
 (
@@ -35,23 +69,13 @@ CREATE TABLE block
     largeur         DECIMAL(10, 2),
     epaisseur       DECIMAL(10, 2),
     cout_production DECIMAL(10, 2),
+    cout_tehorique  DECIMAL(10, 2),
+    volume          DECIMAL(10, 2),
+    machine_id      INTEGER REFERENCES machine (id) NOT NULL,
     block_mere      INTEGER REFERENCES block (id) DEFAULT null,
-    date_production TIMESTAMP                     DEFAULT CURRENT_TIMESTAMP
+    date_production DATE                          DEFAULT CURRENT_DATE
 );
 
-
-
-
--- CREATE TABLE reste
--- (
---     id              SERIAL PRIMARY KEY,
---     block_id        INTEGER REFERENCES block (id),
---     longueur        DECIMAL(10, 2),
---     largeur         DECIMAL(10, 2),
---     epaisseur       DECIMAL(10, 2),
---     cout_production DECIMAL(10, 2),
---     date_creation   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
 
 CREATE TABLE produit
 (
@@ -107,7 +131,7 @@ CREATE TABLE mvt_stock_produit
 
 CREATE TABLE teta
 (
-    id   SERIAL PRIMARY KEY,
+    id    SERIAL PRIMARY KEY,
     value DECIMAL(10, 2)
 );
 
@@ -125,3 +149,4 @@ SELECT *
 FROM block
 WHERE id not in (SELECT block_mere
                  FROM block);
+

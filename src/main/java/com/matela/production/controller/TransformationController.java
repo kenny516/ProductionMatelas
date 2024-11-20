@@ -67,7 +67,7 @@ public class TransformationController {
             reste.setLargeur(largeur);
             reste.setEpaisseur(epaisseur);
             reste.setBlockMere(block);
-            reste.setDateProduction(transformation.getDateTransformation());
+              //reste.setDateProduction(transformation.getDateTransformation());
             reste = blockService.createBlock(reste);
             transformation.setReste(reste);
             Transformation tr =  transformationService.createTransformation(transformation);

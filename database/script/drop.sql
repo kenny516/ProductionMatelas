@@ -12,3 +12,9 @@ DROP TABLE IF EXISTS teta CASCADE;
 -- -- Finally, drop the database
 \c postgres;
 DROP DATABASE IF EXISTS production_matelas;
+
+
+
+ALTER TABLE block DISABLE TRIGGER ALL;
+DELETE FROM block;
+ALTER TABLE block ENABLE TRIGGER ALL;
