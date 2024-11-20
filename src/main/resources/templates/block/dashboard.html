@@ -145,10 +145,9 @@
                                 <div class="data-row">
                                     <span class="data-label">Différence:</span>
                                     <span class="data-value"
-                                          th:text="${#numbers.abs(machine.coutProduction - machine.coutTheorique)}"
+                                          th:text="${machine.coutProduction - machine.coutTheorique}"
                                           th:classappend="${machine.coutProduction - machine.coutTheorique <= 0 ? 'cost-positive' : 'cost-negative'}">
-</span>
-
+                                    </span>
                                 </div>
                             </div>
                         </div>

@@ -41,6 +41,7 @@ public class BlockService {
     private SortieService sortieService;
     @Autowired
     private FormuleService formuleService;
+
     public BlockService(BlockRepository blockRepository) {
         this.blockRepository = blockRepository;
     }
@@ -109,19 +110,18 @@ public class BlockService {
 
 
     @Transactional
-    public void importBlocksFromCsv(MultipartFile file) {
+    public void importBlocksFromCsv(MultipartFile file) throws Exception {
         try {
             String sql = generateQuery(file);
             // Exécuter la requête SQL avec EntityManager
             entityManager.createNativeQuery(sql).executeUpdate();
             System.out.println("Importation réussie avec une seule requête SQL !");
         } catch (Exception e) {
-            e.printStackTrace();
-            System.err.println("Erreur lors de l'importation des données CSV.");
+            throw new Exception(e.getMessage());
         }
     }
 
-    public String generateQuery(MultipartFile file) {
+    public String generateQuery(MultipartFile file) throws Exception {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim().parse(reader);
 
@@ -136,7 +136,8 @@ public class BlockService {
                 double largeur = Double.parseDouble(record.get("largeur"));
 
                 double volume = longueur * epaisseur * largeur;
-                double coutTheorique = cout_theorique(dateCreation, volume);
+//                double coutTheorique = cout_theorique(dateCreation, volume);
+                double coutTheorique = cout_theorique_perf(dateCreation, volume);
                 System.out.println("cout theorique: " + coutTheorique);
 
                 sqlBuilder.append("(").append(record.get("id").trim()).append(", ") // ID
@@ -165,10 +166,9 @@ public class BlockService {
             System.out.println("requête SQL succes!");
             return sqlBuilder.toString();
         } catch (Exception e) {
-            e.printStackTrace();
             System.err.println("Erreur lors de l'importation des données CSV.");
+            throw new Exception(e.getMessage());
         }
-        return "";
     }
 
 
@@ -186,14 +186,13 @@ public class BlockService {
     public double cout_theorique(LocalDate dateCreation, double volume) throws Exception {
         double cout_theorique = 0.0;
         Formule formule = formuleService.findByFirst();
-
         for (FormuleDetail formuleDetail : formule.getFormuleDetails()) {
             double necessaire = volume * formuleDetail.getQuantite();
 
             List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDate(formuleDetail.getMatierePremiereId(), dateCreation, necessaire);
             // verifier si pas assez pour le volume
-            if (quantiteActuelleAchatDTOS.isEmpty() ) {
-                throw new Exception("Pas assez de matière première pour la formule avec la matiere premier "+formuleDetail.getMatierePremiereId());
+            if (quantiteActuelleAchatDTOS.isEmpty()) {
+                throw new Exception("Pas assez de matière première pour la formule avec la matiere premier " + formuleDetail.getMatierePremiereId());
             }
             for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
                 double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
@@ -207,7 +206,7 @@ public class BlockService {
                     quantiteUtilisee = quantiteAUtiliser;
 
                     Sortie sortie = new Sortie();
-                    System.out.println("iddddddddddd "+quantiteActuelleAchatDTO.getIdAchat());
+                    System.out.println("iddddddddddd " + quantiteActuelleAchatDTO.getIdAchat());
                     sortie.setAchatMatierePremierId(quantiteActuelleAchatDTO.getIdAchat());
                     sortie.setDateSortie(dateCreation);
                     sortie.setQuantite(quantiteUtilisee);
@@ -217,6 +216,56 @@ public class BlockService {
                     break;
                 }
             }
+        }
+
+        return cout_theorique;
+    }
+
+    public double cout_theorique_perf(LocalDate dateCreation, double volume) throws Exception {
+        double cout_theorique = 0.0;
+        Formule formule = formuleService.findByFirst();
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
+
+        int batchSize = 0;
+
+        for (FormuleDetail formuleDetail : formule.getFormuleDetails()) {
+            double necessaire = volume * formuleDetail.getQuantite();
+
+            List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDate(formuleDetail.getMatierePremiereId(), dateCreation, necessaire);
+
+            if (quantiteActuelleAchatDTOS.isEmpty()) {
+                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + formuleDetail.getMatierePremiereId());
+            }
+
+            for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
+                double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
+                double quantiteUtilisee = 0.0;
+
+                if (quantiteDisponible > 0) {
+                    double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
+                    cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
+                    necessaire -= quantiteAUtiliser;
+                    quantiteUtilisee = quantiteAUtiliser;
+
+                    queryBuilder.append("(")
+                            .append(quantiteActuelleAchatDTO.getIdAchat()).append(", '")
+                            .append(dateCreation).append("', ")
+                            .append(quantiteUtilisee).append("), ");
+
+                    batchSize++;
+
+                }
+                if (necessaire <= 0) {
+                    break;
+                }
+            }
+        }
+        if (batchSize > 0) {
+            queryBuilder.setLength(queryBuilder.length() - 2);
+            queryBuilder.append(";"); // Terminer la requête
+//            System.out.println("Requête SQL générée : " + queryBuilder.toString());
+            entityManager.createNativeQuery(queryBuilder.toString()).executeUpdate();
         }
 
         return cout_theorique;
@@ -381,8 +430,6 @@ public class BlockService {
         }
         return dtos;
     }
-
-
 
 
 }

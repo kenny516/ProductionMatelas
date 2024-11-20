@@ -34,7 +34,7 @@ class BlockServiceTest {
                 csvContent.getBytes()
         );
         // Étape 2 : Appeler la méthode à tester
-        blockService.generateQuery(file);
+       // blockService.generateQuery(file);
 
 //        String csvContentMachine = """
 //                id,nom

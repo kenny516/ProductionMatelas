@@ -35,4 +35,6 @@ public class SortieService {
     public void deleteSortie(Long id) {
         sortieRepository.deleteById(id);
     }
+
+
 }
