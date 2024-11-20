@@ -20,10 +20,10 @@ public class Sortie {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "id_achatMateriel", nullable = false)
+    @Column(name = "id_achatmateriel", nullable = false)
     private Long achatMatierePremierId;
 
-    @Column(nullable = false)
+    @Column(name = "quantite",nullable = false)
     private Double quantite;
 
     @Column(name = "date_sortie", nullable = false)

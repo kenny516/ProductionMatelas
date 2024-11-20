@@ -17,7 +17,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
     @Query(value = """
             SELECT * FROM block WHERE id not in (
                 SELECT block_mere FROM block WHERE block_mere is not NULL
-                );""",nativeQuery = true)
+                );""", nativeQuery = true)
     List<Block> getValidBlock();
 
     @Query(value = "WITH RECURSIVE descendants AS (" +
@@ -82,6 +82,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
 
     @Query("SELECT b FROM Block b ORDER BY b.id ASC")
     List<Block> findBlocklimit(@Param("limit") int limit);
+
     // CSV content
     @Transactional
     @Modifying
@@ -89,6 +90,15 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)", nativeQuery = true)
     void insertBlock(Long id, String nom, Double longueur, Double largeur, Double epaisseur, Double coutProduction,
                      Double volume, Long machine, Long blockMere, LocalDate dateProduction);
+
+
+    /// Donner final
+    @Query(value = "SELECT machine_id, " +
+            "volume, " +
+            "cout_production, " +
+            "cout_tehorique " +
+            "FROM machineDashboard ", nativeQuery = true)
+    List<Object[]> findQuantiteActuelleParMachine();
 
 
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,13 +44,23 @@ public class AchatmatierepremierService {
         });
     }
 
-    public List<QuantiteActuelleAchatDTO> findAllCurrentQuantities() {
-        return achatmatierepremierRepository.findAllCurrentQuantitiesRaw();
+    public List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantitiesDate(Long idMatierePremiere, LocalDate date, double volume) {
+        List<Object[]> results = achatmatierepremierRepository.findByMatierePremiereCurrentQuantitiesBefore(idMatierePremiere, date, volume);
+
+        List<QuantiteActuelleAchatDTO> dtos = new ArrayList<>();
+        for (Object[] result : results) {
+            Long idAchat = (Long) result[0];
+            Long matierePremiereId = (Long) result[1];
+            Double quantite_actuelle = (Double) result[2];
+            Double prix_achat = (Double) result[3];
+            LocalDate dateAchat = result[4] != null ? ((java.sql.Date) result[4]).toLocalDate() : null; // date_achat
+
+            QuantiteActuelleAchatDTO dto = new QuantiteActuelleAchatDTO(idAchat, matierePremiereId,quantite_actuelle,prix_achat, dateAchat);
+            dtos.add(dto);
+        }
+        return dtos;
     }
-    public List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantities(Long idMatierePremiere) {
-        return achatmatierepremierRepository.findByMatierePremiereCurrentQuantities(idMatierePremiere);
-    }
-    public List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantitiesDate(Long idMatierePremiere,LocalDate date) {
-        return achatmatierepremierRepository.findByMatierePremiereCurrentQuantitiesBefore(idMatierePremiere,date);
-    }
+
+
+
 }

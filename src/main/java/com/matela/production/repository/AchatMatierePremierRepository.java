@@ -1,35 +1,42 @@
 package com.matela.production.repository;
 
-import com.matela.production.DTO.QuantiteActuelleAchatDTO;
 import com.matela.production.entity.AchatMatierePremier;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Repository
 public interface AchatMatierePremierRepository extends JpaRepository<AchatMatierePremier, Long> {
     @Query(value = """
-                SELECT * from vue_quantite_actuelle_achat
+            SELECT id_achat, matiere_premiere_id, quantite_actuelle, prix_achat, date_achat
+            FROM vue_quantite_actuelle_achat
             """, nativeQuery = true)
-    List<QuantiteActuelleAchatDTO> findAllCurrentQuantitiesRaw();
+    List<Object[]> findAllCurrentQuantitiesRaw();
 
     @Query(value = """
-                SELECT * from vue_quantite_actuelle_achat
-                where matiere_premiere_id = :matierePremiereId
+            SELECT id_achat, matiere_premiere_id, quantite_actuelle, prix_achat, date_achat
+            FROM vue_quantite_actuelle_achat
+            WHERE matiere_premiere_id = :matierePremiereId
             """, nativeQuery = true)
-    List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantities(Long matierePremiereId);
+    List<Object[]> findByMatierePremiereCurrentQuantities(@Param("matierePremiereId") Long matierePremiereId);
 
     @Query(value = """
-                SELECT * 
-                FROM vue_quantite_actuelle_achat
-                WHERE matiere_premiere_id = :matierePremiereId
-                  AND date_achat <= :date
+            SELECT id_achat, matiere_premiere_id, quantite_actuelle,prix_achat,date_achat
+            FROM vue_quantite_actuelle_achat
+            WHERE matiere_premiere_id = :matierePremiereId
+            AND date_achat <= :date
+            GROUP BY id_achat, matiere_premiere_id, date_achat, quantite_actuelle, prix_achat
+            HAVING SUM(quantite_actuelle) >= :requiredQuantity
             """, nativeQuery = true)
-    List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantitiesBefore(
+    List<Object[]> findByMatierePremiereCurrentQuantitiesBefore(
             @Param("matierePremiereId") Long matierePremiereId,
-            @Param("date") LocalDate date
+            @Param("date") LocalDate date,
+            @Param("requiredQuantity") Double requiredQuantity
     );
+
 
 }

@@ -29,7 +29,7 @@ public class FormuleService {
     }
     @Cacheable("formulle1")
     public Formule findByFirst() {
-        return formuleRepository.findFirst();
+        return formuleRepository.findFirstFormule();
     }
 
     public Formule save(Formule formule) {

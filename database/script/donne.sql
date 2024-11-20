@@ -1,27 +1,35 @@
-INSERT INTO matierePremiereSimple (id, nom, quantite, prix_achat)
-VALUES (1, 'Matiere A', 0.5, 10.00), -- 0.5 unité par volume 1
-       (2, 'Matiere B', 0.3, 15.00), -- 0.3 unité par volume 0.6
-       (3, 'Matiere C', 0.2, 20.00); -- 0.2 unité par volume 0.4
-
-
+-- Insérer des données dans la table matierePremiere
 INSERT INTO matierePremiere (id, nom, prix_achat)
-VALUES (1, 'Matiere A', 10.00), -- 0.5 unité par volume
-       (2, 'Matiere B', 15.00), -- 0.3 unité par volume
-       (3, 'Matiere C', 20.00); -- 0.2 unité par volume
+VALUES (1, 'Essence', 120.50),
+       (2, 'Papier', 15.30),
+       (3, 'Durcisseur', 75.00);
+
+-- Insérer des données dans la table formule
+INSERT INTO formule (id, nom, description)
+VALUES (1, 'Formule A', 'Production standard de blocs.');
+
+-- Insérer des données dans la table formuleDetail
+INSERT INTO formuleDetail (id, formule_id, matiere_premiere_id, quantite, unite)
+VALUES (1, 1, 1, 10.00, 'Litres'),
+       (2, 1, 2, 5.00, 'Kg'),
+       (3, 1, 3, 2.50, 'Litres');
 
 
+-- Insérer des données dans la table achatMatierePremier
 INSERT INTO achatMatierePremier (id, matiere_premiere_id, quantite, prix_achat, date_achat)
-VALUES (1, 1, 100, 9.50, '2024-11-01'),  -- Achat pour Matiere A
-       (2, 1, 50, 10.00, '2024-11-10'),  -- Achat pour Matiere A
-       (3, 2, 100, 14.00, '2024-11-01'), -- Achat pour Matiere B
-       (4, 3, 50, 18.00, '2024-11-05'),  -- Achat pour Matiere C
-       (5, 3, 100, 19.00, '2024-11-12'); -- Achat pour Matiere C
+VALUES (1, 1, 50.00, 125.00, '2024-11-01'),
+       (2, 2, 100.00, 20.00, '2024-11-03'),
+       (3, 3, 30.00, 80.00, '2024-11-05');
 
+-- Insérer des données dans la table machine
 INSERT INTO machine (id, nom)
-VALUES (1, 'Machine 1'),
-       (2, 'Machine 2');
+VALUES (1, 'Machine A'),
+       (2, 'Machine B'),
+       (3, 'Machine B');
 
-INSERT INTO block (id, nom, longueur, largeur, epaisseur, cout_production, volume, machine_id, block_mere, date_production)
-VALUES (1, 'Bloc A', 2.0, 1.0, 1.0, 100, 2.0, 1, NULL, '2024-11-15'), -- Volume = 2
-       (2, 'Bloc B', 1.0, 1.0, 1.0, 80, 1.0, 1, NULL, '2024-11-18'),  -- Volume = 1
-       (3, 'Bloc C', 3.0, 1.0, 1.0, 120, 3.0, 2, NULL, '2024-11-20'); -- Volume = 3
+-- Insérer des données dans la table block
+INSERT INTO block (id, nom, longueur, largeur, epaisseur, cout_production, volume, machine_id, block_mere,
+                   date_production)
+VALUES (1, 'Block A1', 2.00, 1.50, 0.50, 300.00, 1.50, 1, NULL, '2024-11-10'),
+       (2, 'Block B1', 3.00, 2.00, 0.75, 450.00, 4.50, 2, NULL, '2024-11-11'),
+       (3, 'Block A2', 1.00, 1.00, 0.25, 150.00, 0.25, 1, 1, '2024-11-15');

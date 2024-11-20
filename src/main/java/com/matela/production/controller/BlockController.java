@@ -1,5 +1,6 @@
 package com.matela.production.controller;
 
+import com.matela.production.DTO.MachineDTO;
 import com.matela.production.entity.Block;
 import com.matela.production.service.BlockService;
 import com.matela.production.service.TransformationService;
@@ -53,6 +54,14 @@ public class BlockController {
         transformationService.updateRevient(blockList,proportion);
         model.addAttribute("status", "success");
         return "result-status";
+    }
+
+
+    @GetMapping("/dashboard")
+    public String dashboardMachine(Model model) {
+        List<MachineDTO> machineDTOS = blockService.getMachineCosts();
+        model.addAttribute("machines", machineDTOS);
+        return "block/dashboard";
     }
 
 }

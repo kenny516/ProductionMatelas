@@ -27,6 +27,9 @@ public class FormuleDetail {
     @JoinColumn(name = "formule_id")
     private Formule formule;
 
+    @Column(name = "matiere_premiere_id")
+    private Long matierePremiereId;
+
     @NotNull
     @Column(name = "quantite")
     private Double quantite;

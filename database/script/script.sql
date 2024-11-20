@@ -49,7 +49,7 @@ CREATE TABLE achatMatierePremier
 CREATE TABLE sortie
 (
     id               SERIAL PRIMARY KEY,
-    id_achatMateriel INTEGER REFERENCES achatMatierePremier,
+    id_achatmateriel INTEGER REFERENCES achatMatierePremier,
     quantite         DECIMAL(10, 2),
     date_sortie      DATE DEFAULT CURRENT_DATE
 );
@@ -69,6 +69,7 @@ CREATE TABLE block
     largeur         DECIMAL(10, 2),
     epaisseur       DECIMAL(10, 2),
     cout_production DECIMAL(10, 2),
+    cout_tehorique  DECIMAL(10, 2),
     volume          DECIMAL(10, 2),
     machine_id      INTEGER REFERENCES machine (id) NOT NULL,
     block_mere      INTEGER REFERENCES block (id) DEFAULT null,
