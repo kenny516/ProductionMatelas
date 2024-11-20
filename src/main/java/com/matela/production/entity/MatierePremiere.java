@@ -8,9 +8,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
 @Getter
 @Setter
 @AllArgsConstructor
@@ -31,8 +28,5 @@ public class MatierePremiere {
     @NotNull
     @Column(name = "prix_achat")
     private Double prixAchat;
-
-    @OneToMany(mappedBy = "matierePremiere")
-    private Set<AchatMatierePremierDetail> achatMatierePremierDetails = new LinkedHashSet<>();
 
 }

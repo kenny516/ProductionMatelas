@@ -1,5 +1,6 @@
 package com.matela.production.service;
 
+import com.matela.production.DTO.QuantiteActuelleAchatDTO;
 import com.matela.production.entity.AchatMatierePremier;
 import com.matela.production.repository.AchatMatierePremierRepository;
 import org.springframework.stereotype.Service;
@@ -40,5 +41,15 @@ public class AchatmatierepremierService {
             achat.setDateAchat(dateAchat);
             return achatmatierepremierRepository.save(achat);
         });
+    }
+
+    public List<QuantiteActuelleAchatDTO> findAllCurrentQuantities() {
+        return achatmatierepremierRepository.findAllCurrentQuantitiesRaw();
+    }
+    public List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantities(Long idMatierePremiere) {
+        return achatmatierepremierRepository.findByMatierePremiereCurrentQuantities(idMatierePremiere);
+    }
+    public List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantitiesDate(Long idMatierePremiere,LocalDate date) {
+        return achatmatierepremierRepository.findByMatierePremiereCurrentQuantitiesBefore(idMatierePremiere,date);
     }
 }

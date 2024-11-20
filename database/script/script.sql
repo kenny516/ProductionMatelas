@@ -28,25 +28,32 @@ CREATE TABLE formuleDetail
     unite               VARCHAR(50)    NOT NULL
 );
 
--- Table des achats de matières premières
-CREATE TABLE achatMatierePremier
+CREATE TABLE matierePremiereSimple
 (
     id         SERIAL PRIMARY KEY,
-    date_achat DATE DEFAULT CURRENT_DATE
+    nom        VARCHAR(100)   NOT NULL,
+    quantite   DECIMAL(10, 2),
+    prix_achat DECIMAL(10, 2) NOT NULL
 );
 
-CREATE TABLE achatMatierePremierDetail
+
+CREATE TABLE achatMatierePremier
 (
     id                  SERIAL PRIMARY KEY,
-    achat_matiere_id    INTEGER REFERENCES achatMatierePremier (id) ON DELETE CASCADE,
     matiere_premiere_id INTEGER REFERENCES matierePremiere (id) ON DELETE CASCADE,
     quantite            DECIMAL(10, 2) NOT NULL,
-    prix_achat          DECIMAL(10, 2) NOT NULL
+    prix_achat          DECIMAL(10, 2) NOT NULL,
+    date_achat          DATE DEFAULT CURRENT_DATE
 );
---pour calculer le nombre de block a partir de stock de matiere premiere
--- il faut calculer combien  de bloc peut etre produit par chaque stockde matiere premiere puis prendre le plus petit nombre
 
---pour le prix de revient tehorique calculer la quantite pour chaque matiere premiere et somme par date biensur
+CREATE TABLE sortie
+(
+    id               SERIAL PRIMARY KEY,
+    id_achatMateriel INTEGER REFERENCES achatMatierePremier,
+    quantite         DECIMAL(10, 2),
+    date_sortie      DATE DEFAULT CURRENT_DATE
+);
+
 
 CREATE TABLE machine
 (
@@ -68,16 +75,6 @@ CREATE TABLE block
     date_production DATE                          DEFAULT CURRENT_DATE
 );
 
--- CREATE TABLE reste
--- (
---     id              SERIAL PRIMARY KEY,
---     block_id        INTEGER REFERENCES block (id),
---     longueur        DECIMAL(10, 2),
---     largeur         DECIMAL(10, 2),
---     epaisseur       DECIMAL(10, 2),
---     cout_production DECIMAL(10, 2),
---     date_creation   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
--- );
 
 CREATE TABLE produit
 (

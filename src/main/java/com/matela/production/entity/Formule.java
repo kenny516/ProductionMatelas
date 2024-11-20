@@ -8,8 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 
 @Getter
 @Setter
@@ -32,6 +31,6 @@ public class Formule {
     private String description;
 
     @OneToMany(mappedBy = "formule")
-    private Set<FormuleDetail> formuleDetails = new LinkedHashSet<>();
+    private List<FormuleDetail> formuleDetails;
 
 }

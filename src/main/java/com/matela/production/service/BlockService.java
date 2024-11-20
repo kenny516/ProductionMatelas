@@ -1,7 +1,7 @@
 package com.matela.production.service;
 
-import com.matela.production.entity.Block;
-import com.matela.production.entity.Machine;
+import com.matela.production.DTO.QuantiteActuelleAchatDTO;
+import com.matela.production.entity.*;
 import com.matela.production.repository.BlockRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -33,6 +33,14 @@ public class BlockService {
 
     @Autowired
     private BlockRepository blockRepository;
+    @Autowired
+    private AchatmatierepremierService achatmatierepremierService;
+    @Autowired
+    private SortieService sortieService;
+    @Autowired
+    private FormuleService formuleService;
+    @Autowired
+    private StockService stockService;
 
     public BlockService(BlockRepository blockRepository) {
         this.blockRepository = blockRepository;
@@ -127,7 +135,8 @@ public class BlockService {
 
             System.out.println("commencement de la generation");
             for (CSVRecord record : records) {
-                // Construire les valeurs directement à partir des données CSV
+                LocalDate dateCreation = LocalDate.parse(record.get("date_production"));
+
                 sqlBuilder.append("(")
                         .append(record.get("id").trim()).append(", ") // ID
                         .append("'").append(record.get("nom").trim().replace("'", "''")).append("', ") // Nom
@@ -137,9 +146,7 @@ public class BlockService {
                         .append(record.get("cout_production").trim()).append(", ") // Coût de production
                         .append(record.get("volume").trim()).append(", ") // Volume
                         .append(record.get("machine_id").trim()).append(", ") // Machine ID
-                        .append(record.isSet("block_mere") && !record.get("block_mere").trim().isEmpty()
-                                ? record.get("block_mere").trim()
-                                : "NULL").append(", ") // Block mère
+                        .append(record.isSet("NULL")).append(", ") // Block mère
                         .append("'").append(record.get("date_production").trim()).append("'") // Date production
                         .append("),");
 
@@ -175,6 +182,36 @@ public class BlockService {
             prVolumique += block.getCoutProduction();
         }
         return prVolumique / volumeTotal;
+    }
+
+    public double cout_tehorique(LocalDate dateCreation, double volume) throws Exception {
+        double cout_tehorique = 0.0;
+        Formule formule = formuleService.findByFirst();
+        for (FormuleDetail formuleDetail : formule.getFormuleDetails()) {
+            double necessaire = volume * formuleDetail.getQuantite();
+            List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDate(formuleDetail.getId(), dateCreation);
+            for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
+                double sortieD = 0.0;
+                double quantite = quantiteActuelleAchatDTO.getQuantiteActuelle();
+                if (quantite < necessaire) {
+                    sortieD+=quantite;
+                    necessaire -= quantite;
+                    cout_tehorique += quantite * quantiteActuelleAchatDTO.getPrixAchat();
+                } else if (quantite >= necessaire) {
+                    sortieD+=necessaire;
+                    cout_tehorique += necessaire * quantiteActuelleAchatDTO.getPrixAchat();
+                }
+                Sortie sortie = new Sortie();
+                sortie.setAchatMatierePremierId(quantiteActuelleAchatDTO.getIdAchat());
+                sortie.setDateSortie(dateCreation);
+                sortie.setQuantite(sortieD);
+                sortieService.createSortie(sortie);
+                if (quantite == necessaire){
+                    break;
+                }
+            }
+        }
+        return cout_tehorique;
     }
 
 
@@ -286,7 +323,6 @@ public class BlockService {
             e.printStackTrace();
         }
     }
-
 
     public void generateRandomBlocksQueryNative(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId) {
         ThreadLocalRandom random = ThreadLocalRandom.current();

@@ -1,15 +1,16 @@
 package com.matela.production.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -23,11 +24,20 @@ public class AchatMatierePremier {
     @Column(name = "id", nullable = false)
     private Long id;
 
+    @ManyToOne
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(name = "matiere_premiere_id")
+    private MatierePremiere matierePremiere;
+
+    @NotNull
+    @Column(name = "quantite")
+    private Double quantite;
+
+    @NotNull
+    @Column(name = "prix_achat")
+    private Double prixAchat;
+
     @ColumnDefault("CURRENT_DATE")
     @Column(name = "date_achat")
     private LocalDate dateAchat;
-
-    @OneToMany(mappedBy = "achatMatiere")
-    private Set<AchatMatierePremierDetail> achatMatierePremierDetails = new LinkedHashSet<>();
-
 }
