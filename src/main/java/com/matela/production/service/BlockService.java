@@ -111,8 +111,9 @@ public class BlockService {
 
     @Transactional
     public void importBlocksFromCsv(MultipartFile file) throws Exception {
+        Formule formule = formuleService.findByFirst();
         try {
-            String sql = generateQuery(file);
+            String sql = generateQuery(formule.getFormuleDetails(), file);
             // Exécuter la requête SQL avec EntityManager
             entityManager.createNativeQuery(sql).executeUpdate();
             System.out.println("Importation réussie avec une seule requête SQL !");
@@ -121,7 +122,7 @@ public class BlockService {
         }
     }
 
-    public String generateQuery(MultipartFile file) throws Exception {
+    public String generateQuery(List<FormuleDetail> formuleDetails, MultipartFile file) throws Exception {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim().parse(reader);
 
@@ -137,7 +138,9 @@ public class BlockService {
 
                 double volume = longueur * epaisseur * largeur;
 //                double coutTheorique = cout_theorique(dateCreation, volume);
-                double coutTheorique = cout_theorique_perf(dateCreation, volume);
+//                double coutTheorique = cout_theorique_perf(formuleDetails, dateCreation, volume);
+                double coutTheorique = cout_theorique_Groupe(formuleDetails, dateCreation, volume);
+
                 System.out.println("cout theorique: " + coutTheorique);
 
                 sqlBuilder.append("(").append(record.get("id").trim()).append(", ") // ID
@@ -164,6 +167,7 @@ public class BlockService {
                 return "";
             }
             System.out.println("requête SQL succes!");
+            System.out.println(sqlBuilder.toString());
             return sqlBuilder.toString();
         } catch (Exception e) {
             System.err.println("Erreur lors de l'importation des données CSV.");
@@ -190,26 +194,24 @@ public class BlockService {
             double necessaire = volume * formuleDetail.getQuantite();
 
             List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDate(formuleDetail.getMatierePremiereId(), dateCreation, necessaire);
-            // verifier si pas assez pour le volume
+
             if (quantiteActuelleAchatDTOS.isEmpty()) {
                 throw new Exception("Pas assez de matière première pour la formule avec la matiere premier " + formuleDetail.getMatierePremiereId());
             }
             for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
                 double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
-                double quantiteUtilisee = 0.0;
 
                 if (quantiteDisponible > 0) {
                     double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
 
                     cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
                     necessaire -= quantiteAUtiliser;
-                    quantiteUtilisee = quantiteAUtiliser;
 
                     Sortie sortie = new Sortie();
                     System.out.println("iddddddddddd " + quantiteActuelleAchatDTO.getIdAchat());
                     sortie.setAchatMatierePremierId(quantiteActuelleAchatDTO.getIdAchat());
                     sortie.setDateSortie(dateCreation);
-                    sortie.setQuantite(quantiteUtilisee);
+                    sortie.setQuantite(quantiteAUtiliser);
                     sortieService.createSortie(sortie);
                 }
                 if (necessaire <= 0) {
@@ -221,15 +223,60 @@ public class BlockService {
         return cout_theorique;
     }
 
-    public double cout_theorique_perf(LocalDate dateCreation, double volume) throws Exception {
+    public double cout_theorique_perf(List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
         double cout_theorique = 0.0;
-        Formule formule = formuleService.findByFirst();
         StringBuilder queryBuilder = new StringBuilder();
         queryBuilder.append("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
 
         int batchSize = 0;
+        for (FormuleDetail formuleDetail : formuleDetails) {
+            double necessaire = volume * formuleDetail.getQuantite();
 
-        for (FormuleDetail formuleDetail : formule.getFormuleDetails()) {
+            List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDate(formuleDetail.getMatierePremiereId(), dateCreation, necessaire);
+
+            if (quantiteActuelleAchatDTOS.isEmpty()) {
+                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + formuleDetail.getMatierePremiereId());
+            }
+
+            for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
+                double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
+//                double quantiteUtilisee = 0.0;
+
+                if (quantiteDisponible > 0) {
+                    double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
+                    cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
+                    necessaire -= quantiteAUtiliser;
+//                    quantiteUtilisee = quantiteAUtiliser;
+
+                    queryBuilder.append("(")
+                            .append(quantiteActuelleAchatDTO.getIdAchat()).append(", '")
+                            .append(dateCreation).append("', ")
+                            .append(quantiteAUtiliser).append("), ");
+
+                    batchSize++;
+
+                }
+                if (necessaire <= 0) {
+                    break;
+                }
+            }
+        }
+        if (batchSize > 0) {
+            queryBuilder.setLength(queryBuilder.length() - 2);
+            queryBuilder.append(";"); // Terminer la requête
+//            System.out.println("Requête SQL générée : " + queryBuilder.toString());
+            entityManager.createNativeQuery(queryBuilder.toString()).executeUpdate();
+        }
+
+        return cout_theorique;
+    }
+
+    // ajouter ca en haut
+    //        queryBuilder.append("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
+    public double cout_theorique_ultra_perf(StringBuilder queryBuilder, List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
+        double cout_theorique = 0.0;
+
+        for (FormuleDetail formuleDetail : formuleDetails) {
             double necessaire = volume * formuleDetail.getQuantite();
 
             List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDate(formuleDetail.getMatierePremiereId(), dateCreation, necessaire);
@@ -252,13 +299,61 @@ public class BlockService {
                             .append(quantiteActuelleAchatDTO.getIdAchat()).append(", '")
                             .append(dateCreation).append("', ")
                             .append(quantiteUtilisee).append("), ");
-
-                    batchSize++;
-
                 }
                 if (necessaire <= 0) {
                     break;
                 }
+            }
+        }
+        return cout_theorique;
+    }
+    //ajouter a la fin
+//    if (batchSize > 0) {
+//        queryBuilder.setLength(queryBuilder.length() - 2);
+//        queryBuilder.append(";"); // Terminer la requête
+//        System.out.println("Requête SQL générée : " + queryBuilder.toString());
+//        entityManager.createNativeQuery(queryBuilder.toString()).executeUpdate();
+//    }
+
+
+    public double cout_theorique_Groupe(List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
+        double cout_theorique = 0.0;
+        StringBuilder queryBuilder = new StringBuilder();
+        queryBuilder.append("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
+
+        List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDatePerf(dateCreation);
+
+        int batchSize = 0;
+        for (FormuleDetail formuleDetail : formuleDetails) {
+            double necessaire = volume * formuleDetail.getQuantite();
+
+            for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
+                if (quantiteActuelleAchatDTO.getMatierePremiereId() == formuleDetail.getMatierePremiereId() +1){
+                    break;
+                }
+                if (quantiteActuelleAchatDTO.getMatierePremiereId().longValue() == formuleDetail.getMatierePremiereId().longValue()) {
+                    double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
+
+                    if (quantiteDisponible > 0) {
+                        double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
+                        cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
+                        necessaire -= quantiteAUtiliser;
+
+                        queryBuilder.append("(")
+                                .append(quantiteActuelleAchatDTO.getIdAchat()).append(", '")
+                                .append(dateCreation).append("', ")
+                                .append(quantiteAUtiliser).append("), ");
+
+                        batchSize++;
+
+                    }
+                    if (necessaire <= 0) {
+                        break;
+                    }
+                }
+            }
+            if (necessaire > 0) {
+                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + formuleDetail.getMatierePremiereId());
             }
         }
         if (batchSize > 0) {
@@ -270,7 +365,6 @@ public class BlockService {
 
         return cout_theorique;
     }
-
 
     public void generateRandomBlocks(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId) {
         ThreadLocalRandom random = ThreadLocalRandom.current();

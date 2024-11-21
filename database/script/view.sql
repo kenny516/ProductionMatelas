@@ -13,16 +13,23 @@ ORDER BY a.date_achat;
 
 select * from vue_quantite_actuelle_achat;
 
+
 CREATE OR REPLACE VIEW machineDashboard AS
 (
-SELECT machine_id,
-       sum(volume)          as volume,
-       sum(cout_production) as cout_production,
-       sum(cout_tehorique)  as cout_tehorique
-
-FROM block
-group by machine_id
+SELECT
+    machine_id,
+    SUM(volume) AS volume,
+    SUM(cout_production) AS cout_production,
+    SUM(cout_tehorique) AS cout_theorique,
+    EXTRACT(YEAR FROM date_production) AS production_year
+FROM
+    block
+GROUP BY
+    machine_id, EXTRACT(YEAR FROM date_production)
     );
+
+
+
 
 
 select * from machineDashboard;
