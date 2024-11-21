@@ -524,6 +524,35 @@ public class BlockService {
         }
         return dtos;
     }
+    public List<MachineDTO> getMachineCosts(int year) {
+        List<Object[]> objects = blockRepository.findQuantiteActuelleParMachineByYear(year);
+        List<MachineDTO> dtos = new ArrayList<>();
+        for (Object[] object : objects) {
+            Long machineId = (Long) object[0];
+
+            // Check and convert volume
+            Object volumeObj = object[1];
+            BigDecimal volumeBigDecimal = (volumeObj instanceof BigDecimal) ? (BigDecimal) volumeObj : new BigDecimal((Double) volumeObj);
+
+            // Check and convert coutProduction
+            Object coutProductionObj = object[2];
+            BigDecimal coutProductionBigDecimal = (coutProductionObj instanceof BigDecimal) ? (BigDecimal) coutProductionObj : new BigDecimal((Double) coutProductionObj);
+
+            // Check and convert coutTheorique
+            Object coutTheoriqueObj = object[3];
+            BigDecimal coutTheoriqueBigDecimal = (coutTheoriqueObj instanceof BigDecimal) ? (BigDecimal) coutTheoriqueObj : new BigDecimal((Double) coutTheoriqueObj);
+
+            // Convert BigDecimal to double
+            double volume = volumeBigDecimal.doubleValue();
+            double coutProduction = coutProductionBigDecimal.doubleValue();
+            double coutTheorique = coutTheoriqueBigDecimal.doubleValue();
+
+            // Create DTO
+            MachineDTO dto = new MachineDTO(machineId, volume, coutProduction, coutTheorique);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
 
 
 }

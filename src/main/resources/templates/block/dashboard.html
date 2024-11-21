@@ -96,6 +96,23 @@
         Dashboard des Machines
     </h1>
 
+    <!-- Formulaire pour sélectionner l'année -->
+    <form th:action="@{/dashboard/year}" method="get" class="mb-4">
+        <div class="form-row align-items-center">
+            <div class="col-auto">
+                <label for="yearSelect" class="mr-2">Sélectionner l'année</label>
+                <select class="form-control" id="yearSelect" name="year">
+                    <option value="2022" th:selected="${year == 2022}">2022</option>
+                    <option value="2023" th:selected="${year == 2023}">2023</option>
+                    <option value="0" th:selected="${year == 0}">Tous</option>
+                </select>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Afficher</button>
+            </div>
+        </div>
+    </form>
+
     <div class="row" th:each="machine : ${machines}">
         <div class="col-12">
             <div class="machine-card">

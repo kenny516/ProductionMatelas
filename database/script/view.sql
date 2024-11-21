@@ -14,6 +14,7 @@ ORDER BY a.date_achat;
 select * from vue_quantite_actuelle_achat;
 
 
+DROP VIEW machineDashboard;
 CREATE OR REPLACE VIEW machineDashboard AS
 (
 SELECT
@@ -27,9 +28,6 @@ FROM
 GROUP BY
     machine_id, EXTRACT(YEAR FROM date_production)
     );
-
-
-
 
 
 select * from machineDashboard;
