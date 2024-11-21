@@ -115,7 +115,7 @@ public class BlockService {
         try {
             String sql = generateQuery(formule.getFormuleDetails(), file);
             // Exécuter la requête SQL avec EntityManager
-            entityManager.createNativeQuery(sql).executeUpdate();
+            //entityManager.createNativeQuery(sql).executeUpdate();
             System.out.println("Importation réussie avec une seule requête SQL !");
         } catch (Exception e) {
             throw new Exception(e.getMessage());
@@ -126,7 +126,7 @@ public class BlockService {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim().parse(reader);
 
-            StringBuilder sqlBuilder = new StringBuilder("INSERT INTO block (id, nom, longueur, largeur, epaisseur, cout_production, cout_theorique, volume, machine_id, block_mere, date_production) VALUES ");
+            StringBuilder sqlBuilder = new StringBuilder("INSERT INTO block (nom, longueur, largeur, epaisseur, cout_production, cout_tehorique, volume, machine_id, block_mere, date_production) VALUES ");
             int count = 0;
 
             System.out.println("Commencement de la génération");
@@ -145,9 +145,10 @@ public class BlockService {
                     double coutTheorique = cout_theorique_Groupe(formuleDetails, dateCreation, volume);
 //                    System.out.println("Coût théorique: " + coutTheorique);
 
+                    //                            .append(record.get("id").trim()).append(", ") // ID
                     sqlBuilder.append("(")
-                            .append(record.get("id").trim()).append(", ") // ID
-                            .append("'").append(record.get("nom").trim().replace("'", "")).append("', ") // Nom
+//                            .append(record.get("id").trim()).append(", ") // ID
+                            .append("'").append("block").append(count).append("', ") // Nom
                             .append(longueur).append(", ") // Longueur
                             .append(largeur).append(", ") // Largeur
                             .append(epaisseur).append(", ") // Épaisseur
@@ -156,12 +157,12 @@ public class BlockService {
                             .append(volume).append(", ") // Volume
                             .append(record.get("machine_id").trim()).append(", ") // Machine ID
                             .append("NULL").append(", ") // Block mère
-                            .append("'").append(dateStr).append("'") // Date production
+                            .append("'").append(dateCreation).append("'") // Date production
                             .append("),");
 
                     count++;
                 } catch (Exception e) {
-                    System.err.println("Erreur dans la ligne CSV :"+ record.toString() + " - " + e.getMessage());
+                    System.err.println("Erreur dans la ligne CSV :" + record.toString() + " - " + e.getMessage());
                 }
             }
             System.out.println("Fin");
@@ -173,7 +174,7 @@ public class BlockService {
                 System.out.println("Le fichier CSV est vide ou mal formaté.");
                 return "";
             }
-            //System.out.println(sqlBuilder.toString());
+            System.out.println(sqlBuilder.toString());
             return sqlBuilder.toString();
         } catch (Exception e) {
             System.err.println("Erreur lors de l'importation des données CSV.");
@@ -181,9 +182,13 @@ public class BlockService {
         }
     }
 
-    private LocalDate parseDate(String dateStr) {
+    public static LocalDate parseDate(String dateStr) {
         try {
-            return LocalDate.parse(dateStr);
+            // Définir le format d'entrée, ici 'dd-MM-yyyy'
+            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+            // Convertir la chaîne de caractères en LocalDate
+            LocalDate date = LocalDate.parse(dateStr, inputFormatter);
+            return date; // Le format interne de LocalDate est 'YYYY-MM-DD' par défaut
         } catch (Exception e) {
             System.err.println("Format de date invalide: " + dateStr);
             throw new IllegalArgumentException("Format de date invalide: " + dateStr);
@@ -199,7 +204,6 @@ public class BlockService {
             throw new IllegalArgumentException("Valeur numérique invalide: " + value);
         }
     }
-
 
 
     public double prixRevientVolumique(int nbLine) {
@@ -353,7 +357,7 @@ public class BlockService {
             double necessaire = volume * formuleDetail.getQuantite();
 
             for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
-                if (quantiteActuelleAchatDTO.getMatierePremiereId() == formuleDetail.getMatierePremiereId() +1){
+                if (quantiteActuelleAchatDTO.getMatierePremiereId() == formuleDetail.getMatierePremiereId() + 1) {
                     break;
                 }
                 if (quantiteActuelleAchatDTO.getMatierePremiereId().longValue() == formuleDetail.getMatierePremiereId().longValue()) {
@@ -549,6 +553,7 @@ public class BlockService {
         }
         return dtos;
     }
+
     public List<MachineDTO> getMachineCosts(int year) {
         List<Object[]> objects = blockRepository.findQuantiteActuelleParMachineByYear(year);
         List<MachineDTO> dtos = new ArrayList<>();
