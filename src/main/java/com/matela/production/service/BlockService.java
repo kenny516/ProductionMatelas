@@ -126,39 +126,46 @@ public class BlockService {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim().parse(reader);
 
-            StringBuilder sqlBuilder = new StringBuilder("INSERT INTO block (id, nom, longueur, largeur, epaisseur, cout_production,cout_tehorique, volume, machine_id, block_mere, date_production) VALUES ");
+            StringBuilder sqlBuilder = new StringBuilder("INSERT INTO block (id, nom, longueur, largeur, epaisseur, cout_production, cout_theorique, volume, machine_id, block_mere, date_production) VALUES ");
             int count = 0;
 
-            System.out.println("commencement de la generation");
+            System.out.println("Commencement de la génération");
+
             for (CSVRecord record : records) {
-                LocalDate dateCreation = LocalDate.parse(record.get("date_production"));
-                double longueur = Double.parseDouble(record.get("longueur"));
-                double epaisseur = Double.parseDouble(record.get("epaisseur"));
-                double largeur = Double.parseDouble(record.get("largeur"));
+                try {
+                    // Gestion des dates avec un format flexible
+                    String dateStr = record.get("date_production").trim();
+                    LocalDate dateCreation = parseDate(dateStr);
 
-                double volume = longueur * epaisseur * largeur;
-//                double coutTheorique = cout_theorique(dateCreation, volume);
-//                double coutTheorique = cout_theorique_perf(formuleDetails, dateCreation, volume);
-                double coutTheorique = cout_theorique_Groupe(formuleDetails, dateCreation, volume);
+                    double longueur = parseDouble(record.get("longueur").trim());
+                    double epaisseur = parseDouble(record.get("epaisseur").trim());
+                    double largeur = parseDouble(record.get("largeur").trim());
 
-                System.out.println("cout theorique: " + coutTheorique);
+                    double volume = longueur * epaisseur * largeur;
+                    double coutTheorique = cout_theorique_Groupe(formuleDetails, dateCreation, volume);
+//                    System.out.println("Coût théorique: " + coutTheorique);
 
-                sqlBuilder.append("(").append(record.get("id").trim()).append(", ") // ID
-                        .append("'").append(record.get("nom").trim().replace("'", "")).append("', ") // Nom
-                        .append(record.get("longueur").trim()).append(", ") // Longueur
-                        .append(record.get("largeur").trim()).append(", ") // Largeur
-                        .append(record.get("epaisseur").trim()).append(", ") // Épaisseur
-                        .append(record.get("cout_production").trim()).append(", ") // Coût de production
-                        .append(coutTheorique).append(", ") // Coût tehorique
-                        .append(volume).append(", ") // Volume
-                        .append(record.get("machine_id").trim()).append(", ") // Machine ID
-                        .append("NULL").append(", ") // Block mère
-                        .append("'").append(record.get("date_production").trim()).append("'") // Date production
-                        .append("),");
+                    sqlBuilder.append("(")
+                            .append(record.get("id").trim()).append(", ") // ID
+                            .append("'").append(record.get("nom").trim().replace("'", "")).append("', ") // Nom
+                            .append(longueur).append(", ") // Longueur
+                            .append(largeur).append(", ") // Largeur
+                            .append(epaisseur).append(", ") // Épaisseur
+                            .append(parseDouble(record.get("cout_production").trim())).append(", ") // Coût de production
+                            .append(coutTheorique).append(", ") // Coût théorique
+                            .append(volume).append(", ") // Volume
+                            .append(record.get("machine_id").trim()).append(", ") // Machine ID
+                            .append("NULL").append(", ") // Block mère
+                            .append("'").append(dateStr).append("'") // Date production
+                            .append("),");
 
-                count++;
+                    count++;
+                } catch (Exception e) {
+                    System.err.println("Erreur dans la ligne CSV :"+ record.toString() + " - " + e.getMessage());
+                }
             }
-            System.out.println("fin");
+            System.out.println("Fin");
+
             if (count > 0) {
                 sqlBuilder.setLength(sqlBuilder.length() - 1);
                 sqlBuilder.append(";");
@@ -166,14 +173,33 @@ public class BlockService {
                 System.out.println("Le fichier CSV est vide ou mal formaté.");
                 return "";
             }
-            System.out.println("requête SQL succes!");
-            System.out.println(sqlBuilder.toString());
+            //System.out.println(sqlBuilder.toString());
             return sqlBuilder.toString();
         } catch (Exception e) {
             System.err.println("Erreur lors de l'importation des données CSV.");
             throw new Exception(e.getMessage());
         }
     }
+
+    private LocalDate parseDate(String dateStr) {
+        try {
+            return LocalDate.parse(dateStr);
+        } catch (Exception e) {
+            System.err.println("Format de date invalide: " + dateStr);
+            throw new IllegalArgumentException("Format de date invalide: " + dateStr);
+        }
+    }
+
+    private double parseDouble(String value) {
+        try {
+            value = value.replaceAll("\\s", "");
+            return Double.parseDouble(value);
+        } catch (NumberFormatException e) {
+            System.err.println("Valeur numérique invalide: " + value);
+            throw new IllegalArgumentException("Valeur numérique invalide: " + value);
+        }
+    }
+
 
 
     public double prixRevientVolumique(int nbLine) {
@@ -314,7 +340,6 @@ public class BlockService {
 //        System.out.println("Requête SQL générée : " + queryBuilder.toString());
 //        entityManager.createNativeQuery(queryBuilder.toString()).executeUpdate();
 //    }
-
 
     public double cout_theorique_Groupe(List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
         double cout_theorique = 0.0;
