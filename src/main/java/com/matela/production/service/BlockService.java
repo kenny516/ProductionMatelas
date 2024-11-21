@@ -110,22 +110,26 @@ public class BlockService {
 
 
     @Transactional
-    public void importBlocksFromCsv(MultipartFile file) throws Exception {
+    public void importBlocksFromCsv(List<AchatMatierePremier> achatMatierePremiercs,MultipartFile file) throws Exception {
         Formule formule = formuleService.findByFirst();
         try {
-            String sql = generateQuery(formule.getFormuleDetails(), file);
+            String sql = generateQuery(achatMatierePremiercs,formule.getFormuleDetails(), file);
             // Exécuter la requête SQL avec EntityManager
-            //entityManager.createNativeQuery(sql).executeUpdate();
+            entityManager.createNativeQuery(sql).executeUpdate();
+            for ( AchatMatierePremier achatMatierePremier:achatMatierePremiercs){
+                achatmatierepremierService.updateDateQuantite(achatMatierePremier.getId(), achatMatierePremier.getQuantite());
+            }
             System.out.println("Importation réussie avec une seule requête SQL !");
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
     }
 
-    public String generateQuery(List<FormuleDetail> formuleDetails, MultipartFile file) throws Exception {
+    public String generateQuery(List<AchatMatierePremier> achatMatierePremiers,List<FormuleDetail> formuleDetails, MultipartFile file) throws Exception {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim().parse(reader);
 
+            StringBuilder sortie = new StringBuilder("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
             StringBuilder sqlBuilder = new StringBuilder("INSERT INTO block (nom, longueur, largeur, epaisseur, cout_production, cout_tehorique, volume, machine_id, block_mere, date_production) VALUES ");
             int count = 0;
 
@@ -133,16 +137,19 @@ public class BlockService {
 
             for (CSVRecord record : records) {
                 try {
+                    System.out.println("Numero =" +count);
                     // Gestion des dates avec un format flexible
                     String dateStr = record.get("date_production").trim();
-                    LocalDate dateCreation = parseDate(dateStr);
+                    LocalDate dateCreation = LocalDate.parse(dateStr);
 
                     double longueur = parseDouble(record.get("longueur").trim());
                     double epaisseur = parseDouble(record.get("epaisseur").trim());
                     double largeur = parseDouble(record.get("largeur").trim());
 
                     double volume = longueur * epaisseur * largeur;
-                    double coutTheorique = cout_theorique_Groupe(formuleDetails, dateCreation, volume);
+                    //double coutTheorique = cout_theorique_Groupe(formuleDetails, dateCreation, volume);
+                    double coutTheorique = cout_theorique_GroupeUpdate(achatMatierePremiers,formuleDetails, dateCreation, volume);
+
 //                    System.out.println("Coût théorique: " + coutTheorique);
 
                     //                            .append(record.get("id").trim()).append(", ") // ID
@@ -174,7 +181,9 @@ public class BlockService {
                 System.out.println("Le fichier CSV est vide ou mal formaté.");
                 return "";
             }
-            System.out.println(sqlBuilder.toString());
+            sortie.setLength(sortie.length() - 2);
+            sortie.append(";");
+            //entityManager.createNativeQuery(sortie.toString()).executeUpdate();
             return sqlBuilder.toString();
         } catch (Exception e) {
             System.err.println("Erreur lors de l'importation des données CSV.");
@@ -184,11 +193,8 @@ public class BlockService {
 
     public static LocalDate parseDate(String dateStr) {
         try {
-            // Définir le format d'entrée, ici 'dd-MM-yyyy'
-            DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-            // Convertir la chaîne de caractères en LocalDate
-            LocalDate date = LocalDate.parse(dateStr, inputFormatter);
-            return date; // Le format interne de LocalDate est 'YYYY-MM-DD' par défaut
+            LocalDate date = LocalDate.parse(dateStr);
+            return date;
         } catch (Exception e) {
             System.err.println("Format de date invalide: " + dateStr);
             throw new IllegalArgumentException("Format de date invalide: " + dateStr);
@@ -306,33 +312,36 @@ public class BlockService {
     public double cout_theorique_ultra_perf(StringBuilder queryBuilder, List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
         double cout_theorique = 0.0;
 
+        List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDatePerf(dateCreation);
+
         for (FormuleDetail formuleDetail : formuleDetails) {
             double necessaire = volume * formuleDetail.getQuantite();
 
-            List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDate(formuleDetail.getMatierePremiereId(), dateCreation, necessaire);
-
-            if (quantiteActuelleAchatDTOS.isEmpty()) {
-                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + formuleDetail.getMatierePremiereId());
-            }
-
             for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
-                double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
-                double quantiteUtilisee = 0.0;
-
-                if (quantiteDisponible > 0) {
-                    double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
-                    cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
-                    necessaire -= quantiteAUtiliser;
-                    quantiteUtilisee = quantiteAUtiliser;
-
-                    queryBuilder.append("(")
-                            .append(quantiteActuelleAchatDTO.getIdAchat()).append(", '")
-                            .append(dateCreation).append("', ")
-                            .append(quantiteUtilisee).append("), ");
-                }
-                if (necessaire <= 0) {
+                if (quantiteActuelleAchatDTO.getMatierePremiereId() == formuleDetail.getMatierePremiereId() + 1) {
                     break;
                 }
+                if (quantiteActuelleAchatDTO.getMatierePremiereId().longValue() == formuleDetail.getMatierePremiereId().longValue()) {
+                    double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
+
+                    if (quantiteDisponible > 0) {
+                        double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
+                        cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
+                        necessaire -= quantiteAUtiliser;
+
+                        queryBuilder.append("(")
+                                .append(quantiteActuelleAchatDTO.getIdAchat()).append(", '")
+                                .append(dateCreation).append("', ")
+                                .append(quantiteAUtiliser).append("), ");
+
+                    }
+                    if (necessaire <= 0) {
+                        break;
+                    }
+                }
+            }
+            if (necessaire > 0) {
+                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + formuleDetail.getMatierePremiereId());
             }
         }
         return cout_theorique;
@@ -391,9 +400,36 @@ public class BlockService {
 //            System.out.println("Requête SQL générée : " + queryBuilder.toString());
             entityManager.createNativeQuery(queryBuilder.toString()).executeUpdate();
         }
-
         return cout_theorique;
     }
+
+
+    public double cout_theorique_GroupeUpdate(List<AchatMatierePremier> achatMatierePremiers,List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
+        double cout_theorique = 0.0;
+
+        for (FormuleDetail formuleDetail : formuleDetails) {
+            double necessaire = volume * formuleDetail.getQuantite();
+            for (AchatMatierePremier quantiteActuelleAchatDTO : achatMatierePremiers) {
+                if (quantiteActuelleAchatDTO.getMatierePremiere().getId().equals(formuleDetail.getMatierePremiereId()) && !quantiteActuelleAchatDTO.getDateAchat().isAfter(dateCreation)) {
+                    double quantiteDisponible = quantiteActuelleAchatDTO.getQuantite();
+                    if (quantiteDisponible > 0) {
+                        double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
+                        cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
+                        necessaire -= quantiteAUtiliser;
+                        quantiteActuelleAchatDTO.setQuantite(quantiteDisponible - quantiteAUtiliser);
+                    }
+                }
+                if (necessaire <= 0) {
+                    break;
+                }
+            }
+            if (necessaire > 0) {
+                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + achatMatierePremiers.size());
+            }
+        }
+        return cout_theorique;
+    }
+
 
     public void generateRandomBlocks(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId) {
         ThreadLocalRandom random = ThreadLocalRandom.current();

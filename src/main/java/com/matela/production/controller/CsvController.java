@@ -1,5 +1,7 @@
 package com.matela.production.controller;
 
+import com.matela.production.entity.AchatMatierePremier;
+import com.matela.production.service.AchatmatierepremierService;
 import com.matela.production.service.BlockService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -16,6 +18,10 @@ public class CsvController {
     @Autowired
     BlockService blockService;
 
+    @Autowired
+    AchatmatierepremierService achatmatierepremierService;
+
+
 
     @GetMapping("/csv")
     public String csvFront(){
@@ -28,7 +34,8 @@ public class CsvController {
             return "redirect:/?error";
         }
         try {
-            blockService.importBlocksFromCsv(file);
+            List<AchatMatierePremier> achatMatierePremiers = achatmatierepremierService.findAll();
+            blockService.importBlocksFromCsv(achatMatierePremiers,file);
             model.addAttribute("status", "success");
         } catch (Exception e) {
             model.addAttribute("message", e.getMessage());

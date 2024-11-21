@@ -43,6 +43,12 @@ public class AchatmatierepremierService {
             return achatmatierepremierRepository.save(achat);
         });
     }
+    public Optional<AchatMatierePremier> updateDateQuantite(Long id, double quantite) {
+        return achatmatierepremierRepository.findById(id).map(achat -> {
+            achat.setQuantite(quantite);
+            return achatmatierepremierRepository.save(achat);
+        });
+    }
 
     public List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantitiesDate(Long idMatierePremiere, LocalDate date, double volume) {
         List<Object[]> results = achatmatierepremierRepository.findByMatierePremiereCurrentQuantitiesBefore(idMatierePremiere, date, volume);
@@ -78,5 +84,9 @@ public class AchatmatierepremierService {
         return dtos;
     }
 
+    public List<AchatMatierePremier> findByDate(LocalDate date) {
+        List<AchatMatierePremier> achatMatierePremierRepositories =  achatmatierepremierRepository.findByDate(date);
+        return achatMatierePremierRepositories;
+    }
 
 }

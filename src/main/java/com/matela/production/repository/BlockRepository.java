@@ -97,7 +97,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "volume, " +
             "cout_production, " +
             "cout_theorique " +
-            "FROM machineDashboard ", nativeQuery = true)
+            "FROM machineDashboardT ", nativeQuery = true)
     List<Object[]> findQuantiteActuelleParMachine();
 
     @Query(value = "SELECT machine_id, " +

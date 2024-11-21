@@ -29,6 +29,19 @@ GROUP BY
     machine_id, EXTRACT(YEAR FROM date_production)
     );
 
+CREATE OR REPLACE VIEW machineDashboardT AS
+(
+SELECT
+    machine_id,
+    SUM(volume) AS volume,
+    SUM(cout_production) AS cout_production,
+    SUM(cout_tehorique) AS cout_theorique
+FROM
+    block
+GROUP BY
+    machine_id
+    );
+
 SELECT
     machine_id,
     SUM(longueur*largeur*epaisseur) AS volume,
