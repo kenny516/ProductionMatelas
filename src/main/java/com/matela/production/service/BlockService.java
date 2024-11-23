@@ -116,6 +116,11 @@ public class BlockService {
             // Exécuter la requête SQL avec EntityManager
             entityManager.createNativeQuery(sql).executeUpdate();
             for ( AchatMatierePremier achatMatierePremier:achatMatierePremiercs){
+//                Sortie sortie = new Sortie();
+//                sortie.setAchatMatierePremierId(achatMatierePremier.getId());
+//                sortie.setQuantite(achatMatierePremier.getQuantite());
+//                sortie.setDateSortie(achatMatierePremier.getDateAchat());
+//                sortieService.createSortie(sortie);
                 achatmatierepremierService.updateDateQuantite(achatMatierePremier.getId(), achatMatierePremier.getQuantite());
             }
             System.out.println("Importation réussie avec une seule requête SQL !");
