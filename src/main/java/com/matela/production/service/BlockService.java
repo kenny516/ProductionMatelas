@@ -1,7 +1,6 @@
 package com.matela.production.service;
 
 import com.matela.production.DTO.MachineDTO;
-import com.matela.production.DTO.QuantiteActuelleAchatDTO;
 import com.matela.production.entity.*;
 import com.matela.production.repository.BlockRepository;
 import jakarta.persistence.EntityManager;
@@ -223,187 +222,6 @@ public class BlockService {
         return prVolumique / volumeTotal;
     }
 
-    public double cout_theorique(LocalDate dateCreation, double volume) throws Exception {
-        double cout_theorique = 0.0;
-        Formule formule = formuleService.findByFirst();
-        for (FormuleDetail formuleDetail : formule.getFormuleDetails()) {
-            double necessaire = volume * formuleDetail.getQuantite();
-
-            List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDate(formuleDetail.getMatierePremiereId(), dateCreation, necessaire);
-
-            if (quantiteActuelleAchatDTOS.isEmpty()) {
-                throw new Exception("Pas assez de matière première pour la formule avec la matiere premier " + formuleDetail.getMatierePremiereId());
-            }
-            for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
-                double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
-
-                if (quantiteDisponible > 0) {
-                    double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
-
-                    cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
-                    necessaire -= quantiteAUtiliser;
-
-                    Sortie sortie = new Sortie();
-                    System.out.println("iddddddddddd " + quantiteActuelleAchatDTO.getIdAchat());
-                    sortie.setAchatMatierePremierId(quantiteActuelleAchatDTO.getIdAchat());
-                    sortie.setDateSortie(dateCreation);
-                    sortie.setQuantite(quantiteAUtiliser);
-                    sortieService.createSortie(sortie);
-                }
-                if (necessaire <= 0) {
-                    break;
-                }
-            }
-        }
-
-        return cout_theorique;
-    }
-
-    public double cout_theorique_perf(List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
-        double cout_theorique = 0.0;
-        StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
-
-        int batchSize = 0;
-        for (FormuleDetail formuleDetail : formuleDetails) {
-            double necessaire = volume * formuleDetail.getQuantite();
-
-            List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDate(formuleDetail.getMatierePremiereId(), dateCreation, necessaire);
-
-            if (quantiteActuelleAchatDTOS.isEmpty()) {
-                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + formuleDetail.getMatierePremiereId());
-            }
-
-            for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
-                double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
-//                double quantiteUtilisee = 0.0;
-
-                if (quantiteDisponible > 0) {
-                    double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
-                    cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
-                    necessaire -= quantiteAUtiliser;
-//                    quantiteUtilisee = quantiteAUtiliser;
-
-                    queryBuilder.append("(")
-                            .append(quantiteActuelleAchatDTO.getIdAchat()).append(", '")
-                            .append(dateCreation).append("', ")
-                            .append(quantiteAUtiliser).append("), ");
-
-                    batchSize++;
-
-                }
-                if (necessaire <= 0) {
-                    break;
-                }
-            }
-        }
-        if (batchSize > 0) {
-            queryBuilder.setLength(queryBuilder.length() - 2);
-            queryBuilder.append(";"); // Terminer la requête
-//            System.out.println("Requête SQL générée : " + queryBuilder.toString());
-            entityManager.createNativeQuery(queryBuilder.toString()).executeUpdate();
-        }
-
-        return cout_theorique;
-    }
-
-    // ajouter ca en haut
-    //        queryBuilder.append("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
-    public double cout_theorique_ultra_perf(StringBuilder queryBuilder, List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
-        double cout_theorique = 0.0;
-
-        List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDatePerf(dateCreation);
-
-        for (FormuleDetail formuleDetail : formuleDetails) {
-            double necessaire = volume * formuleDetail.getQuantite();
-
-            for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
-                if (quantiteActuelleAchatDTO.getMatierePremiereId() == formuleDetail.getMatierePremiereId() + 1) {
-                    break;
-                }
-                if (quantiteActuelleAchatDTO.getMatierePremiereId().longValue() == formuleDetail.getMatierePremiereId().longValue()) {
-                    double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
-
-                    if (quantiteDisponible > 0) {
-                        double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
-                        cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
-                        necessaire -= quantiteAUtiliser;
-
-                        queryBuilder.append("(")
-                                .append(quantiteActuelleAchatDTO.getIdAchat()).append(", '")
-                                .append(dateCreation).append("', ")
-                                .append(quantiteAUtiliser).append("), ");
-
-                    }
-                    if (necessaire <= 0) {
-                        break;
-                    }
-                }
-            }
-            if (necessaire > 0) {
-                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + formuleDetail.getMatierePremiereId());
-            }
-        }
-        return cout_theorique;
-    }
-    //ajouter a la fin
-//    if (batchSize > 0) {
-//        queryBuilder.setLength(queryBuilder.length() - 2);
-//        queryBuilder.append(";"); // Terminer la requête
-//        System.out.println("Requête SQL générée : " + queryBuilder.toString());
-//        entityManager.createNativeQuery(queryBuilder.toString()).executeUpdate();
-//    }
-
-    public double cout_theorique_Groupe(List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
-        double cout_theorique = 0.0;
-        StringBuilder queryBuilder = new StringBuilder();
-        queryBuilder.append("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
-
-        List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findByMatierePremiereCurrentQuantitiesDatePerf(dateCreation);
-
-        int batchSize = 0;
-        for (FormuleDetail formuleDetail : formuleDetails) {
-            double necessaire = volume * formuleDetail.getQuantite();
-
-            for (QuantiteActuelleAchatDTO quantiteActuelleAchatDTO : quantiteActuelleAchatDTOS) {
-                if (quantiteActuelleAchatDTO.getMatierePremiereId() == formuleDetail.getMatierePremiereId() + 1) {
-                    break;
-                }
-                if (quantiteActuelleAchatDTO.getMatierePremiereId().longValue() == formuleDetail.getMatierePremiereId().longValue()) {
-                    double quantiteDisponible = quantiteActuelleAchatDTO.getQuantiteActuelle();
-
-                    if (quantiteDisponible > 0) {
-                        double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
-                        cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
-                        necessaire -= quantiteAUtiliser;
-
-                        queryBuilder.append("(")
-                                .append(quantiteActuelleAchatDTO.getIdAchat()).append(", '")
-                                .append(dateCreation).append("', ")
-                                .append(quantiteAUtiliser).append("), ");
-
-                        batchSize++;
-
-                    }
-                    if (necessaire <= 0) {
-                        break;
-                    }
-                }
-            }
-            if (necessaire > 0) {
-                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + formuleDetail.getMatierePremiereId());
-            }
-        }
-        if (batchSize > 0) {
-            queryBuilder.setLength(queryBuilder.length() - 2);
-            queryBuilder.append(";"); // Terminer la requête
-//            System.out.println("Requête SQL générée : " + queryBuilder.toString());
-            entityManager.createNativeQuery(queryBuilder.toString()).executeUpdate();
-        }
-        return cout_theorique;
-    }
-
-
     public double cout_theorique_GroupeUpdate(List<AchatMatierePremier> achatMatierePremiers,List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
         double cout_theorique = 0.0;
 
@@ -509,7 +327,7 @@ public class BlockService {
             LocalDate dateProduction = LocalDate.now().minusDays(random.nextInt(30)); // Random date in the last 30 days
 
             // Ajouter une ligne CSV
-            String csvLine = String.format(Locale.US, // Force l'utilisation du point comme séparateur décimal
+            String csvLine = String.format(Locale.US,
                     "%d,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%s,%s", i, nameBuilder, longueur, largeur, epaisseur, coutProduction, volume, machineId, blockMere == null ? "" : blockMere, dateProduction.format(formatter));
 
             csvLines.add(csvLine);
@@ -589,7 +407,6 @@ public class BlockService {
         }
         return dtos;
     }
-
     public List<MachineDTO> getMachineCosts(int year) {
         List<Object[]> objects = blockRepository.findQuantiteActuelleParMachineByYear(year);
         List<MachineDTO> dtos = new ArrayList<>();

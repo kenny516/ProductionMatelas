@@ -97,7 +97,8 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "volume, " +
             "cout_production, " +
             "cout_theorique " +
-            "FROM machineDashboardT ", nativeQuery = true)
+            "FROM machineDashboardT " +
+            "order by (cout_production-cout_theorique)  ", nativeQuery = true)
     List<Object[]> findQuantiteActuelleParMachine();
 
     @Query(value = "SELECT machine_id, " +
@@ -105,7 +106,8 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "cout_production, " +
             "cout_theorique " +
             "FROM machineDashboard " +
-            "WHERE production_year = :year", nativeQuery = true)
+            "WHERE production_year = :year " +
+            "order by (cout_production-cout_theorique) ", nativeQuery = true)
     List<Object[]> findQuantiteActuelleParMachineByYear(@Param("year") int year);
 
 
