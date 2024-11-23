@@ -4,6 +4,7 @@ import com.matela.production.entity.Sortie;
 import com.matela.production.repository.SortieRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,4 +36,9 @@ public class SortieService {
     public void deleteSortie(Long id) {
         sortieRepository.deleteById(id);
     }
+    public List<Sortie> findBydate(LocalDate date){
+        return sortieRepository.findByDateSortie(date);
+    }
+
+
 }

@@ -96,9 +96,19 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
     @Query(value = "SELECT machine_id, " +
             "volume, " +
             "cout_production, " +
-            "cout_tehorique " +
-            "FROM machineDashboard ", nativeQuery = true)
+            "cout_theorique " +
+            "FROM machineDashboardT " +
+            "order by (cout_production-cout_theorique)  ", nativeQuery = true)
     List<Object[]> findQuantiteActuelleParMachine();
+
+    @Query(value = "SELECT machine_id, " +
+            "volume, " +
+            "cout_production, " +
+            "cout_theorique " +
+            "FROM machineDashboard " +
+            "WHERE production_year = :year " +
+            "order by (cout_production-cout_theorique) ", nativeQuery = true)
+    List<Object[]> findQuantiteActuelleParMachineByYear(@Param("year") int year);
 
 
 }

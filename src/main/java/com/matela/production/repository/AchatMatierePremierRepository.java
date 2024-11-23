@@ -37,6 +37,27 @@ public interface AchatMatierePremierRepository extends JpaRepository<AchatMatier
             @Param("date") LocalDate date,
             @Param("requiredQuantity") Double requiredQuantity
     );
+    //lay having alagna fogn
+
+    @Query(value = """
+            SELECT id_achat, matiere_premiere_id, quantite_actuelle,prix_achat,date_achat
+            FROM vue_quantite_actuelle_achat
+            WHERE date_achat <= :date
+            GROUP BY id_achat, matiere_premiere_id, date_achat, quantite_actuelle, prix_achat
+            """, nativeQuery = true)
+    List<Object[]> findByMatierePremiereCurrentQuantitiesBeforePerf(
+            @Param("date") LocalDate date
+    );
+
+    @Query(value = """
+            SELECT id, matiere_premiere_id, quantite,prix_achat,date_achat
+            FROM achatmatierepremier
+            WHERE date_achat <= :date
+            GROUP BY id, matiere_premiere_id, date_achat, quantite, prix_achat
+            """, nativeQuery = true)
+    List<AchatMatierePremier> findByDate(
+            @Param("date") LocalDate date
+    );
 
 
 }

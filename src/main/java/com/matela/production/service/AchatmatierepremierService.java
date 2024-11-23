@@ -43,6 +43,12 @@ public class AchatmatierepremierService {
             return achatmatierepremierRepository.save(achat);
         });
     }
+    public Optional<AchatMatierePremier> updateDateQuantite(Long id, double quantite) {
+        return achatmatierepremierRepository.findById(id).map(achat -> {
+            achat.setQuantite(quantite);
+            return achatmatierepremierRepository.save(achat);
+        });
+    }
 
     public List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantitiesDate(Long idMatierePremiere, LocalDate date, double volume) {
         List<Object[]> results = achatmatierepremierRepository.findByMatierePremiereCurrentQuantitiesBefore(idMatierePremiere, date, volume);
@@ -61,6 +67,26 @@ public class AchatmatierepremierService {
         return dtos;
     }
 
+    public List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantitiesDatePerf(LocalDate date) {
+        List<Object[]> results = achatmatierepremierRepository.findByMatierePremiereCurrentQuantitiesBeforePerf(date);
 
+        List<QuantiteActuelleAchatDTO> dtos = new ArrayList<>();
+        for (Object[] result : results) {
+            Long idAchat = (Long) result[0];
+            Long matierePremiereId = (Long) result[1];
+            Double quantite_actuelle = (Double) result[2];
+            Double prix_achat = (Double) result[3];
+            LocalDate dateAchat = result[4] != null ? ((java.sql.Date) result[4]).toLocalDate() : null; // date_achat
+
+            QuantiteActuelleAchatDTO dto = new QuantiteActuelleAchatDTO(idAchat, matierePremiereId,quantite_actuelle,prix_achat, dateAchat);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    public List<AchatMatierePremier> findByDate(LocalDate date) {
+        List<AchatMatierePremier> achatMatierePremierRepositories =  achatmatierepremierRepository.findByDate(date);
+        return achatMatierePremierRepositories;
+    }
 
 }

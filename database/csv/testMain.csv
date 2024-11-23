@@ -1,0 +1,2 @@
+id,nom,longueur,largeur,epaisseur,cout_production,volume,machine_id,block_mere,date_production
+2, 'Block B1', 3.00, 2.00, 0.75, 450.00, 4.50, 2, NULL, 2024-11-11

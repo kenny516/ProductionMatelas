@@ -9,6 +9,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -61,6 +62,18 @@ public class BlockController {
     public String dashboardMachine(Model model) {
         List<MachineDTO> machineDTOS = blockService.getMachineCosts();
         model.addAttribute("machines", machineDTOS);
+        return "block/dashboard";
+    }
+    @GetMapping("/dashboard/year")
+    public String showDashboard(@RequestParam(value = "year") int year, Model model) {
+        List<MachineDTO> machines ;
+        if (year==0){
+            machines = blockService.getMachineCosts();
+        }else{
+           machines = blockService.getMachineCosts(year);
+        }
+        model.addAttribute("machines", machines);
+        model.addAttribute("year", year);
         return "block/dashboard";
     }
 

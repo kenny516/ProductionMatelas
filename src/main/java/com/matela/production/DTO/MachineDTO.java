@@ -14,4 +14,9 @@ public class MachineDTO {
     private Double volume;
     private Double coutProduction;
     private Double coutTheorique;
+
+
+    public Double getEcart(){
+        return Math.abs(coutProduction - coutTheorique);
+    }
 }
