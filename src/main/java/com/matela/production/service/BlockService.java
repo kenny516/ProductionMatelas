@@ -109,13 +109,13 @@ public class BlockService {
 
 
     @Transactional
-    public void importBlocksFromCsv(List<AchatMatierePremier> achatMatierePremiercs,MultipartFile file) throws Exception {
+    public void importBlocksFromCsv(List<AchatMatierePremier> achatMatierePremiercs, MultipartFile file) throws Exception {
         Formule formule = formuleService.findByFirst();
         try {
-            String sql = generateQuery(achatMatierePremiercs,formule.getFormuleDetails(), file);
+            String sql = generateQuery(achatMatierePremiercs, formule.getFormuleDetails(), file);
             // Exécuter la requête SQL avec EntityManager
             entityManager.createNativeQuery(sql).executeUpdate();
-            for ( AchatMatierePremier achatMatierePremier:achatMatierePremiercs){
+            for (AchatMatierePremier achatMatierePremier : achatMatierePremiercs) {
 //                Sortie sortie = new Sortie();
 //                sortie.setAchatMatierePremierId(achatMatierePremier.getId());
 //                sortie.setQuantite(achatMatierePremier.getQuantite());
@@ -129,7 +129,7 @@ public class BlockService {
         }
     }
 
-    public String generateQuery(List<AchatMatierePremier> achatMatierePremiers,List<FormuleDetail> formuleDetails, MultipartFile file) throws Exception {
+    public String generateQuery(List<AchatMatierePremier> achatMatierePremiers, List<FormuleDetail> formuleDetails, MultipartFile file) throws Exception {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim().parse(reader);
 
@@ -141,7 +141,7 @@ public class BlockService {
 
             for (CSVRecord record : records) {
                 try {
-                    System.out.println("Numero =" +count);
+                    System.out.println("Numero =" + count);
                     // Gestion des dates avec un format flexible
                     String dateStr = record.get("date_production").trim();
                     LocalDate dateCreation = LocalDate.parse(dateStr);
@@ -152,7 +152,7 @@ public class BlockService {
 
                     double volume = longueur * epaisseur * largeur;
                     //double coutTheorique = cout_theorique_Groupe(formuleDetails, dateCreation, volume);
-                    double coutTheorique = cout_theorique_GroupeUpdate(achatMatierePremiers,formuleDetails, dateCreation, volume);
+                    double coutTheorique = cout_theorique_GroupeUpdate(achatMatierePremiers, formuleDetails, dateCreation, volume);
 
 //                    System.out.println("Coût théorique: " + coutTheorique);
 
@@ -195,16 +195,6 @@ public class BlockService {
         }
     }
 
-    public static LocalDate parseDate(String dateStr) {
-        try {
-            LocalDate date = LocalDate.parse(dateStr);
-            return date;
-        } catch (Exception e) {
-            System.err.println("Format de date invalide: " + dateStr);
-            throw new IllegalArgumentException("Format de date invalide: " + dateStr);
-        }
-    }
-
     private double parseDouble(String value) {
         try {
             value = value.replaceAll("\\s", "");
@@ -215,19 +205,7 @@ public class BlockService {
         }
     }
 
-
-    public double prixRevientVolumique(int nbLine) {
-        double prVolumique = 0;
-        double volumeTotal = 0;
-        List<Block> blocks = blockRepository.findBlocklimit(nbLine);
-        for (Block block : blocks) {
-            volumeTotal += block.getVolumeb();
-            prVolumique += block.getCoutProduction();
-        }
-        return prVolumique / volumeTotal;
-    }
-
-    public double cout_theorique_GroupeUpdate(List<AchatMatierePremier> achatMatierePremiers,List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
+    public double cout_theorique_GroupeUpdate(List<AchatMatierePremier> achatMatierePremiers, List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
         double cout_theorique = 0.0;
 
         for (FormuleDetail formuleDetail : formuleDetails) {
@@ -253,6 +231,77 @@ public class BlockService {
         return cout_theorique;
     }
 
+    public List<MachineDTO> getMachineCosts() {
+        List<Object[]> objects = blockRepository.findQuantiteActuelleParMachine();
+        List<MachineDTO> dtos = new ArrayList<>();
+        for (Object[] object : objects) {
+            Long machineId = (Long) object[0];
+
+            // Check and convert volume
+            Object volumeObj = object[1];
+            BigDecimal volumeBigDecimal = (volumeObj instanceof BigDecimal) ? (BigDecimal) volumeObj : new BigDecimal((Double) volumeObj);
+
+            // Check and convert coutProduction
+            Object coutProductionObj = object[2];
+            BigDecimal coutProductionBigDecimal = (coutProductionObj instanceof BigDecimal) ? (BigDecimal) coutProductionObj : new BigDecimal((Double) coutProductionObj);
+
+            // Check and convert coutTheorique
+            Object coutTheoriqueObj = object[3];
+            BigDecimal coutTheoriqueBigDecimal = (coutTheoriqueObj instanceof BigDecimal) ? (BigDecimal) coutTheoriqueObj : new BigDecimal((Double) coutTheoriqueObj);
+
+            // Convert BigDecimal to double
+            double volume = volumeBigDecimal.doubleValue();
+            double coutProduction = coutProductionBigDecimal.doubleValue();
+            double coutTheorique = coutTheoriqueBigDecimal.doubleValue();
+
+            // Create DTO
+            MachineDTO dto = new MachineDTO(machineId, volume, coutProduction, coutTheorique);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    public List<MachineDTO> getMachineCosts(int year) {
+        List<Object[]> objects = blockRepository.findQuantiteActuelleParMachineByYear(year);
+        List<MachineDTO> dtos = new ArrayList<>();
+        for (Object[] object : objects) {
+            Long machineId = (Long) object[0];
+
+            // Check and convert volume
+            Object volumeObj = object[1];
+            BigDecimal volumeBigDecimal = (volumeObj instanceof BigDecimal) ? (BigDecimal) volumeObj : new BigDecimal((Double) volumeObj);
+
+            // Check and convert coutProduction
+            Object coutProductionObj = object[2];
+            BigDecimal coutProductionBigDecimal = (coutProductionObj instanceof BigDecimal) ? (BigDecimal) coutProductionObj : new BigDecimal((Double) coutProductionObj);
+
+            // Check and convert coutTheorique
+            Object coutTheoriqueObj = object[3];
+            BigDecimal coutTheoriqueBigDecimal = (coutTheoriqueObj instanceof BigDecimal) ? (BigDecimal) coutTheoriqueObj : new BigDecimal((Double) coutTheoriqueObj);
+
+            // Convert BigDecimal to double
+            double volume = volumeBigDecimal.doubleValue();
+            double coutProduction = coutProductionBigDecimal.doubleValue();
+            double coutTheorique = coutTheoriqueBigDecimal.doubleValue();
+
+            // Create DTO
+            MachineDTO dto = new MachineDTO(machineId, volume, coutProduction, coutTheorique);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+// generation de block
+
+    public double prixRevientVolumique(int nbLine) {
+        double prVolumique = 0;
+        double volumeTotal = 0;
+        List<Block> blocks = blockRepository.findBlocklimit(nbLine);
+        for (Block block : blocks) {
+            volumeTotal += block.getVolumeb();
+            prVolumique += block.getCoutProduction();
+        }
+        return prVolumique / volumeTotal;
+    }
 
     public void generateRandomBlocks(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
@@ -302,144 +351,117 @@ public class BlockService {
     }
 
     public void GenererCSV(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId, String filePath) {
+        if (numBlocks <= 0 || minMachineId > maxMachineId) {
+            throw new IllegalArgumentException("Invalid input parameters.");
+        }
+
+        int depart = getAllBlocks().size() + 1;
+
+
+        // Constantes pour les bornes
+        final double MIN_LONGUEUR = 1.0, MAX_LONGUEUR = 5.0;
+        final double MIN_LARGEUR = 1.0, MAX_LARGEUR = 5.0;
+        final double MIN_EPAISSEUR = 0.5, MAX_EPAISSEUR = 2.0;
+        final double MIN_VARIATION = 0.9, MAX_VARIATION = 1.1;
+
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        List<String> csvLines = new ArrayList<>(numBlocks);
+        List<String> csvLines = new ArrayList<>(numBlocks + depart);
 
-        double minVariation = 0.9;
-        double maxVariation = 1.1;
-
-        StringBuilder nameBuilder = new StringBuilder();
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
 
-        for (int i = 1; i <= numBlocks; i++) {
-            nameBuilder.setLength(0);
-            nameBuilder.append("Bloc ").append((char) ('A' + random.nextInt(26))).append(random.nextInt(1000));
+        for (int i = depart; i <= numBlocks + depart; i++) {
+            // Générer un nom de bloc
+            String blocName = "Bloc " + i;
 
-            double longueur = 1 + random.nextDouble() * 5;
-            double largeur = 1 + random.nextDouble() * 5;
-            double epaisseur = 0.5 + random.nextDouble() * 2;
+            // Générer des dimensions
+            double longueur = MIN_LONGUEUR + random.nextDouble() * (MAX_LONGUEUR - MIN_LONGUEUR);
+            double largeur = MIN_LARGEUR + random.nextDouble() * (MAX_LARGEUR - MIN_LARGEUR);
+            double epaisseur = MIN_EPAISSEUR + random.nextDouble() * (MAX_EPAISSEUR - MIN_EPAISSEUR);
 
-            // Calcul du volume
+            // Calcul du volume et coût de production
             double volume = longueur * largeur * epaisseur;
+            double variation = MIN_VARIATION + random.nextDouble() * (MAX_VARIATION - MIN_VARIATION);
+            double coutProduction = prixVolumique * volume * variation;
 
-            double coutProduction = prixVolumique * volume;
-            double variation = minVariation + (random.nextDouble() * (maxVariation - minVariation));
-            coutProduction *= variation;
+            // Générer un ID de machine
+            long machineId = random.nextLong(minMachineId, maxMachineId + 1);
 
-            long machineId = minMachineId + random.nextLong(maxMachineId - minMachineId + 1);
-            Long blockMere = null; // 30% chance of being null
-
-            LocalDate dateProduction = LocalDate.now().minusDays(random.nextInt(30)); // Random date in the last 30 days
-
+            // Générer une date de production
+            LocalDate dateProduction = LocalDate.now().minusDays(random.nextInt(30));
             // Ajouter une ligne CSV
-            String csvLine = String.format(Locale.US,
-                    "%d,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%s,%s", i, nameBuilder, longueur, largeur, epaisseur, coutProduction, volume, machineId, blockMere == null ? "" : blockMere, dateProduction.format(formatter));
-
-            csvLines.add(csvLine);
+            csvLines.add(String.format(Locale.US,
+                    "%d,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%s,%s",
+                    i, blocName, longueur, largeur, epaisseur, volume, coutProduction, machineId, null, dateProduction.format(formatter)));
         }
 
         // Écrire les données dans un fichier CSV
         try (FileWriter writer = new FileWriter(filePath)) {
-            writer.write("id,nom,longueur,largeur,epaisseur,cout_production,volume,machine_id,block_mere,date_production\n");
+            writer.write("id,nom,longueur,largeur,epaisseur,volume,cout_production,machine_id,block_mere,date_production\n");
             for (String line : csvLines) {
                 writer.write(line + "\n");
             }
             System.out.println("Fichier CSV généré : " + filePath);
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println("Erreur lors de la génération du fichier CSV : " + e.getMessage());
         }
     }
 
-    public void generateRandomBlocksQueryNative(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId) {
+
+    public void GenererInsertQuery(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId, String filePath) {
+        if (numBlocks <= 0 || minMachineId > maxMachineId) {
+            throw new IllegalArgumentException("Invalid input parameters.");
+        }
+
+        int depart = getAllBlocks().size() + 1;
+
+        // Constantes pour les bornes
+        final double MIN_LONGUEUR = 1.0, MAX_LONGUEUR = 5.0;
+        final double MIN_LARGEUR = 1.0, MAX_LARGEUR = 5.0;
+        final double MIN_EPAISSEUR = 0.5, MAX_EPAISSEUR = 2.0;
+        final double MIN_VARIATION = 0.9, MAX_VARIATION = 1.1;
+
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        StringBuilder queryBuilder = new StringBuilder();
+        StringBuilder sqlQuery = new StringBuilder();
 
-        double minVariation = 0.9;
-        double maxVariation = 1.1;
+        sqlQuery.append("INSERT INTO bloc (id, nom, longueur, largeur, epaisseur, volume, cout_production, machine_id, block_mere, date_production) VALUES\n");
 
-        for (int i = 0; i < numBlocks; i++) {
-            // Génération des valeurs aléatoires
-            String nom = "Bloc " + (char) ('A' + random.nextInt(26)) + random.nextInt(1000);
-            double longueur = 1 + random.nextDouble() * 5;
-            double largeur = 1 + random.nextDouble() * 5;
-            double epaisseur = 0.5 + random.nextDouble() * 2;
+        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
+
+        for (int i = depart; i <= numBlocks + depart; i++) {
+            // Générer un nom de bloc
+            String blocName = "Bloc " + i;
+
+            // Générer des dimensions
+            double longueur = MIN_LONGUEUR + random.nextDouble() * (MAX_LONGUEUR - MIN_LONGUEUR);
+            double largeur = MIN_LARGEUR + random.nextDouble() * (MAX_LARGEUR - MIN_LARGEUR);
+            double epaisseur = MIN_EPAISSEUR + random.nextDouble() * (MAX_EPAISSEUR - MIN_EPAISSEUR);
+
+            // Calcul du volume et coût de production
             double volume = longueur * largeur * epaisseur;
-            double coutProduction = prixVolumique * volume;
-            double variation = minVariation + (random.nextDouble() * (maxVariation - minVariation));
-            double coutFinal = coutProduction * variation;
-            long machineId = minMachineId + random.nextLong(maxMachineId - minMachineId + 1);
+            double variation = MIN_VARIATION + random.nextDouble() * (MAX_VARIATION - MIN_VARIATION);
+            double coutProduction = prixVolumique * volume * variation;
 
-            // Construction de la requête SQL pour l'insertion directe
-            queryBuilder.setLength(0);  // Réinitialisation du StringBuilder
-            queryBuilder.append("INSERT INTO block (nom, longueur, largeur, epaisseur, volume, cout_production, machine_id) ").append("VALUES ('").append(nom).append("', ").append(longueur).append(", ").append(largeur).append(", ").append(epaisseur).append(", ").append(volume).append(", ").append(coutFinal).append(", ").append(machineId).append(");");
+            // Générer un ID de machine
+            long machineId = random.nextLong(minMachineId, maxMachineId + 1);
 
-            // Sauvegarde en batch tous les 100 blocs pour optimiser les performances
-            if (i % 100 == 0 && i > 0) {
-                entityManager.flush();
-                entityManager.clear();
-            }
+            // Générer une date de production
+            LocalDate dateProduction = LocalDate.now().minusDays(random.nextInt(30));
+
+            // Ajouter une ligne VALUES
+            sqlQuery.append(String.format(Locale.US,
+                    "(%d, '%s', %.2f, %.2f, %.2f, %.2f, %.2f, %d, NULL, '%s')%s\n",
+                    i, blocName, longueur, largeur, epaisseur, volume, coutProduction, machineId,
+                    dateProduction.format(formatter),
+                    i == numBlocks + depart ? ";" : ","));
         }
-        entityManager.createNativeQuery(queryBuilder.toString()).executeUpdate();
-    }
 
-
-    public List<MachineDTO> getMachineCosts() {
-        List<Object[]> objects = blockRepository.findQuantiteActuelleParMachine();
-        List<MachineDTO> dtos = new ArrayList<>();
-        for (Object[] object : objects) {
-            Long machineId = (Long) object[0];
-
-            // Check and convert volume
-            Object volumeObj = object[1];
-            BigDecimal volumeBigDecimal = (volumeObj instanceof BigDecimal) ? (BigDecimal) volumeObj : new BigDecimal((Double) volumeObj);
-
-            // Check and convert coutProduction
-            Object coutProductionObj = object[2];
-            BigDecimal coutProductionBigDecimal = (coutProductionObj instanceof BigDecimal) ? (BigDecimal) coutProductionObj : new BigDecimal((Double) coutProductionObj);
-
-            // Check and convert coutTheorique
-            Object coutTheoriqueObj = object[3];
-            BigDecimal coutTheoriqueBigDecimal = (coutTheoriqueObj instanceof BigDecimal) ? (BigDecimal) coutTheoriqueObj : new BigDecimal((Double) coutTheoriqueObj);
-
-            // Convert BigDecimal to double
-            double volume = volumeBigDecimal.doubleValue();
-            double coutProduction = coutProductionBigDecimal.doubleValue();
-            double coutTheorique = coutTheoriqueBigDecimal.doubleValue();
-
-            // Create DTO
-            MachineDTO dto = new MachineDTO(machineId, volume, coutProduction, coutTheorique);
-            dtos.add(dto);
+        // Écrire la requête SQL dans un fichier
+        try (FileWriter writer = new FileWriter(filePath)) {
+            writer.write(sqlQuery.toString());
+            System.out.println("Fichier SQL généré : " + filePath);
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la génération du fichier SQL : " + e.getMessage());
         }
-        return dtos;
-    }
-    public List<MachineDTO> getMachineCosts(int year) {
-        List<Object[]> objects = blockRepository.findQuantiteActuelleParMachineByYear(year);
-        List<MachineDTO> dtos = new ArrayList<>();
-        for (Object[] object : objects) {
-            Long machineId = (Long) object[0];
-
-            // Check and convert volume
-            Object volumeObj = object[1];
-            BigDecimal volumeBigDecimal = (volumeObj instanceof BigDecimal) ? (BigDecimal) volumeObj : new BigDecimal((Double) volumeObj);
-
-            // Check and convert coutProduction
-            Object coutProductionObj = object[2];
-            BigDecimal coutProductionBigDecimal = (coutProductionObj instanceof BigDecimal) ? (BigDecimal) coutProductionObj : new BigDecimal((Double) coutProductionObj);
-
-            // Check and convert coutTheorique
-            Object coutTheoriqueObj = object[3];
-            BigDecimal coutTheoriqueBigDecimal = (coutTheoriqueObj instanceof BigDecimal) ? (BigDecimal) coutTheoriqueObj : new BigDecimal((Double) coutTheoriqueObj);
-
-            // Convert BigDecimal to double
-            double volume = volumeBigDecimal.doubleValue();
-            double coutProduction = coutProductionBigDecimal.doubleValue();
-            double coutTheorique = coutTheoriqueBigDecimal.doubleValue();
-
-            // Create DTO
-            MachineDTO dto = new MachineDTO(machineId, volume, coutProduction, coutTheorique);
-            dtos.add(dto);
-        }
-        return dtos;
     }
 
 
