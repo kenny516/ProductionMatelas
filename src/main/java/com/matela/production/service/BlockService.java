@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
@@ -388,8 +389,12 @@ public class BlockService {
             long machineId = random.nextLong(minMachineId, maxMachineId + 1);
 
             // Générer une date aléatoire entre startDate et endDate
-            long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-            LocalDate randomDate = startDate.plusDays(ThreadLocalRandom.current().nextLong(daysBetween + 1));
+            LocalDate randomDate = null;
+            do {
+                long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+                randomDate = startDate.plusDays(ThreadLocalRandom.current().nextLong(daysBetween + 1));
+            } while (randomDate.getDayOfWeek() == DayOfWeek.SATURDAY || randomDate.getDayOfWeek() == DayOfWeek.SUNDAY);
+
             // Ajouter une ligne CSV
             csvLines.add(String.format(Locale.US,
                     "%s,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%s,%s",
@@ -441,8 +446,11 @@ public class BlockService {
             long machineId = random.nextLong(minMachineId, maxMachineId + 1);
 
             // Générer une date de production
-            long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-            LocalDate randomDate = startDate.plusDays(ThreadLocalRandom.current().nextLong(daysBetween + 1));
+            LocalDate randomDate = null;
+            do {
+                long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+                randomDate = startDate.plusDays(ThreadLocalRandom.current().nextLong(daysBetween + 1));
+            } while (randomDate.getDayOfWeek() == DayOfWeek.SATURDAY || randomDate.getDayOfWeek() == DayOfWeek.SUNDAY);
 
             // Ajouter une ligne VALUES
             sqlQuery.append(String.format(Locale.US,
