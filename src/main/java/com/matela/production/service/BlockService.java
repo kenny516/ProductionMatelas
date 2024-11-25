@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
@@ -40,6 +41,15 @@ public class BlockService {
     private SortieService sortieService;
     @Autowired
     private FormuleService formuleService;
+
+    final LocalDate startDate = LocalDate.of(2022, 1, 1);
+    final LocalDate endDate = LocalDate.of(2024, 12, 31);
+    // Constantes pour les bornes
+    final double MIN_LONGUEUR = 20.0, MAX_LONGUEUR = 25.0;
+    final double MIN_LARGEUR = 5.0, MAX_LARGEUR = 7.0;
+    final double MIN_EPAISSEUR = 10.0, MAX_EPAISSEUR = 15.0;
+    final double MIN_VARIATION = 0.9, MAX_VARIATION = 1.1;
+
 
     public BlockService(BlockRepository blockRepository) {
         this.blockRepository = blockRepository;
@@ -156,9 +166,7 @@ public class BlockService {
 
 //                    System.out.println("Coût théorique: " + coutTheorique);
 
-                    //                            .append(record.get("id").trim()).append(", ") // ID
                     sqlBuilder.append("(")
-//                            .append(record.get("id").trim()).append(", ") // ID
                             .append("'").append("block").append(count).append("', ") // Nom
                             .append(longueur).append(", ") // Longueur
                             .append(largeur).append(", ") // Largeur
@@ -354,49 +362,43 @@ public class BlockService {
         if (numBlocks <= 0 || minMachineId > maxMachineId) {
             throw new IllegalArgumentException("Invalid input parameters.");
         }
-
-        int depart = getAllBlocks().size() + 1;
-
-
-        // Constantes pour les bornes
-        final double MIN_LONGUEUR = 1.0, MAX_LONGUEUR = 5.0;
-        final double MIN_LARGEUR = 1.0, MAX_LARGEUR = 5.0;
-        final double MIN_EPAISSEUR = 0.5, MAX_EPAISSEUR = 2.0;
-        final double MIN_VARIATION = 0.9, MAX_VARIATION = 1.1;
+        //int depart = getAllBlocks().size() + 1;
 
         ThreadLocalRandom random = ThreadLocalRandom.current();
-        List<String> csvLines = new ArrayList<>(numBlocks + depart);
+        List<String> csvLines = new ArrayList<>(numBlocks);
 
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
 
-        for (int i = depart; i <= numBlocks + depart; i++) {
+        for (int i = 1; i <= numBlocks ; i++) {
             // Générer un nom de bloc
             String blocName = "Bloc " + i;
 
             // Générer des dimensions
-            double longueur = MIN_LONGUEUR + random.nextDouble() * (MAX_LONGUEUR - MIN_LONGUEUR);
-            double largeur = MIN_LARGEUR + random.nextDouble() * (MAX_LARGEUR - MIN_LARGEUR);
-            double epaisseur = MIN_EPAISSEUR + random.nextDouble() * (MAX_EPAISSEUR - MIN_EPAISSEUR);
+            double longueur = Math.round((MIN_LONGUEUR + random.nextDouble() * (MAX_LONGUEUR - MIN_LONGUEUR)) * 100.0) / 100.0;
+            double largeur = Math.round((MIN_LARGEUR + random.nextDouble() * (MAX_LARGEUR - MIN_LARGEUR)) * 100.0) / 100.0;
+            double epaisseur = Math.round((MIN_EPAISSEUR + random.nextDouble() * (MAX_EPAISSEUR - MIN_EPAISSEUR)) * 100.0) / 100.0;
 
             // Calcul du volume et coût de production
             double volume = longueur * largeur * epaisseur;
             double variation = MIN_VARIATION + random.nextDouble() * (MAX_VARIATION - MIN_VARIATION);
+            variation = Math.round(variation * 10.0) / 10.0;
             double coutProduction = prixVolumique * volume * variation;
 
             // Générer un ID de machine
             long machineId = random.nextLong(minMachineId, maxMachineId + 1);
 
-            // Générer une date de production
-            LocalDate dateProduction = LocalDate.now().minusDays(random.nextInt(30));
+            // Générer une date aléatoire entre startDate et endDate
+            long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+            LocalDate randomDate = startDate.plusDays(ThreadLocalRandom.current().nextLong(daysBetween + 1));
             // Ajouter une ligne CSV
             csvLines.add(String.format(Locale.US,
-                    "%d,%s,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%s,%s",
-                    i, blocName, longueur, largeur, epaisseur, volume, coutProduction, machineId, null, dateProduction.format(formatter)));
+                    "%s,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%s,%s",
+                    blocName, longueur, largeur, epaisseur, volume, coutProduction, machineId, null, randomDate.format(formatter)));
         }
 
         // Écrire les données dans un fichier CSV
         try (FileWriter writer = new FileWriter(filePath)) {
-            writer.write("id,nom,longueur,largeur,epaisseur,volume,cout_production,machine_id,block_mere,date_production\n");
+            writer.write("nom,longueur,largeur,epaisseur,volume,cout_production,machine_id,block_mere,date_production\n");
             for (String line : csvLines) {
                 writer.write(line + "\n");
             }
@@ -411,48 +413,43 @@ public class BlockService {
         if (numBlocks <= 0 || minMachineId > maxMachineId) {
             throw new IllegalArgumentException("Invalid input parameters.");
         }
-
-        int depart = getAllBlocks().size() + 1;
-
-        // Constantes pour les bornes
-        final double MIN_LONGUEUR = 1.0, MAX_LONGUEUR = 5.0;
-        final double MIN_LARGEUR = 1.0, MAX_LARGEUR = 5.0;
-        final double MIN_EPAISSEUR = 0.5, MAX_EPAISSEUR = 2.0;
-        final double MIN_VARIATION = 0.9, MAX_VARIATION = 1.1;
+        //int depart = getAllBlocks().size() + 1;
 
         ThreadLocalRandom random = ThreadLocalRandom.current();
         StringBuilder sqlQuery = new StringBuilder();
 
-        sqlQuery.append("INSERT INTO bloc (id, nom, longueur, largeur, epaisseur, volume, cout_production, machine_id, block_mere, date_production) VALUES\n");
+        sqlQuery.append("INSERT INTO bloc ( nom, longueur, largeur, epaisseur, volume, cout_production, machine_id, block_mere, date_production) VALUES\n");
 
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
 
-        for (int i = depart; i <= numBlocks + depart; i++) {
+        for (int i = 1; i <= numBlocks ; i++) {
             // Générer un nom de bloc
             String blocName = "Bloc " + i;
 
             // Générer des dimensions
-            double longueur = MIN_LONGUEUR + random.nextDouble() * (MAX_LONGUEUR - MIN_LONGUEUR);
-            double largeur = MIN_LARGEUR + random.nextDouble() * (MAX_LARGEUR - MIN_LARGEUR);
-            double epaisseur = MIN_EPAISSEUR + random.nextDouble() * (MAX_EPAISSEUR - MIN_EPAISSEUR);
+            double longueur = Math.round((MIN_LONGUEUR + random.nextDouble() * (MAX_LONGUEUR - MIN_LONGUEUR)) * 100.0) / 100.0;
+            double largeur = Math.round((MIN_LARGEUR + random.nextDouble() * (MAX_LARGEUR - MIN_LARGEUR)) * 100.0) / 100.0;
+            double epaisseur = Math.round((MIN_EPAISSEUR + random.nextDouble() * (MAX_EPAISSEUR - MIN_EPAISSEUR)) * 100.0) / 100.0;
 
             // Calcul du volume et coût de production
             double volume = longueur * largeur * epaisseur;
             double variation = MIN_VARIATION + random.nextDouble() * (MAX_VARIATION - MIN_VARIATION);
+            variation = Math.round(variation * 10.0) / 10.0;
             double coutProduction = prixVolumique * volume * variation;
 
             // Générer un ID de machine
             long machineId = random.nextLong(minMachineId, maxMachineId + 1);
 
             // Générer une date de production
-            LocalDate dateProduction = LocalDate.now().minusDays(random.nextInt(30));
+            long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
+            LocalDate randomDate = startDate.plusDays(ThreadLocalRandom.current().nextLong(daysBetween + 1));
 
             // Ajouter une ligne VALUES
             sqlQuery.append(String.format(Locale.US,
-                    "(%d, '%s', %.2f, %.2f, %.2f, %.2f, %.2f, %d, NULL, '%s')%s\n",
-                    i, blocName, longueur, largeur, epaisseur, volume, coutProduction, machineId,
-                    dateProduction.format(formatter),
-                    i == numBlocks + depart ? ";" : ","));
+                    "('%s', %.2f, %.2f, %.2f, %.2f, %.2f, %d, NULL, '%s')%s\n",
+                    blocName, longueur, largeur, epaisseur, volume, coutProduction, machineId,
+                    randomDate.format(formatter),
+                    i == numBlocks-1 ? ";" : ","));
         }
 
         // Écrire la requête SQL dans un fichier
