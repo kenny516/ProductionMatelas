@@ -51,7 +51,7 @@ public class CsvController {
     @GetMapping("/generer")
     public String genererDonner(Model model){
         double prixVolumique = blockService.prixRevientVolumique(1);
-        blockService.GenererCSV(1000000,5000,1,3,"D:\\L3\\s5\\MrTahina\\SpongeProject\\ProductionMatelas\\database\\csv\\BlockGenerate.csv");
+        blockService.GenererCSV(1000000,6000,1,3,"D:\\L3\\s5\\MrTahina\\SpongeProject\\ProductionMatelas\\database\\csv\\BlockGenerate.csv");
         //blockService.GenererInsertQuery(1,5000,1,3,"D:\\L3\\s5\\MrTahina\\SpongeProject\\ProductionMatelas\\database\\csv\\BlockGenerate.sql");
         model.addAttribute("status", "success");
         return "result-status";

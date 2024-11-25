@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etat stock</title>
+    <link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
+    <link th:href="@{/css/all.min.css}" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2c3e50;
+            --background-color: #f4f6f9;
+            --table-header-bg: #3498db;
+            --table-header-text: white;
+        }
+
+        body {
+            background-color: var(--background-color);
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .container-fluid {
+            padding: 2rem;
+        }
+
+        .page-title {
+            color: var(--secondary-color);
+            margin-bottom: 2rem;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 1rem;
+        }
+
+        .machine-table {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .table-responsive {
+            border-radius: 10px;
+        }
+
+        .table thead {
+            background-color: var(--table-header-bg);
+            color: var(--table-header-text);
+        }
+
+        .table thead th {
+            font-weight: 600;
+            vertical-align: middle;
+            text-transform: uppercase;
+        }
+
+        .performance-badge {
+            display: inline-block;
+            padding: 0.3rem 0.6rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .performance-excellent {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .performance-average {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .performance-poor {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .cost-positive {
+            color: #28a745;
+        }
+
+        .cost-negative {
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+<div th:insert="~{fragments/navbar :: navbar}"></div>
+<div class="container-fluid">
+    <h1 class="page-title">
+        <i class="fas fa-industry me-2"></i>
+        Etat de stock
+    </h1>
+
+
+    <!-- Year Selection Form -->
+    <form th:action="@{/StockEtatForm}" method="get" class="mb-4">
+        <div class="form-row align-items-center">
+            <div class="col-auto">
+                <label for="yearSelect" class="mr-2">Sélectionner la date</label>
+                <input type="date" class="form-control" name="date" id="yearSelect" required>
+            </div>
+            <div class="col-auto">
+                <button type="submit" class="btn btn-primary">Afficher</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Machine Table -->
+    <div class="machine-table">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0">
+                <thead>
+                <tr>
+                    <th>idAchat</th>
+                    <th>matiere premier id</th>
+                    <th>quantite</th>
+                    <th>prix achat</th>
+                    <th>date achat</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="stock : ${quantiteActuelleAchatDTOS}">
+                    <td th:text="${stock.idAchat}"></td>
+                    <td th:text="${stock.matierePremiereId}"></td>
+                    <td th:text="${stock.quantiteActuelle}"></td>
+                    <td th:text="${stock.prixAchat}"></td>
+                    <td th:text="${stock.dateAchat}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/bootstrap.bundle.min.js}"></script>
+</body>
+</html>

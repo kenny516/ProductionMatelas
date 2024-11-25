@@ -1,6 +1,7 @@
 package com.matela.production.service;
 
 import com.matela.production.DTO.MachineDTO;
+import com.matela.production.DTO.QuantiteActuelleAchatDTO;
 import com.matela.production.entity.*;
 import com.matela.production.repository.BlockRepository;
 import jakarta.persistence.EntityManager;
@@ -33,7 +34,6 @@ public class BlockService {
 
     @PersistenceContext
     private EntityManager entityManager;
-
     @Autowired
     private BlockRepository blockRepository;
     @Autowired
@@ -49,7 +49,7 @@ public class BlockService {
     final double MIN_LONGUEUR = 20.0, MAX_LONGUEUR = 25.0;
     final double MIN_LARGEUR = 5.0, MAX_LARGEUR = 7.0;
     final double MIN_EPAISSEUR = 10.0, MAX_EPAISSEUR = 15.0;
-    final double MIN_VARIATION = 0.9, MAX_VARIATION = 1.1;
+    final double MIN_VARIATION = -0.1, MAX_VARIATION = 0.1;
 
 
     public BlockService(BlockRepository blockRepository) {
@@ -121,30 +121,25 @@ public class BlockService {
 
     @Transactional
     public void importBlocksFromCsv(List<AchatMatierePremier> achatMatierePremiercs, MultipartFile file) throws Exception {
+        List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS = achatmatierepremierService.findJiabyService();
         Formule formule = formuleService.findByFirst();
+        StringBuilder sortie = new StringBuilder("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
         try {
-            String sql = generateQuery(achatMatierePremiercs, formule.getFormuleDetails(), file);
+            String sql = generateQuery(sortie,quantiteActuelleAchatDTOS,achatMatierePremiercs, formule.getFormuleDetails(), file);
             // Exécuter la requête SQL avec EntityManager
             entityManager.createNativeQuery(sql).executeUpdate();
-            for (AchatMatierePremier achatMatierePremier : achatMatierePremiercs) {
-//                Sortie sortie = new Sortie();
-//                sortie.setAchatMatierePremierId(achatMatierePremier.getId());
-//                sortie.setQuantite(achatMatierePremier.getQuantite());
-//                sortie.setDateSortie(achatMatierePremier.getDateAchat());
-//                sortieService.createSortie(sortie);
-                achatmatierepremierService.updateDateQuantite(achatMatierePremier.getId(), achatMatierePremier.getQuantite());
-            }
+            System.out.println("block inserer");
+            entityManager.createNativeQuery(sortie.toString()).executeUpdate();
             System.out.println("Importation réussie avec une seule requête SQL !");
         } catch (Exception e) {
             throw new Exception(e.getMessage());
         }
     }
 
-    public String generateQuery(List<AchatMatierePremier> achatMatierePremiers, List<FormuleDetail> formuleDetails, MultipartFile file) throws Exception {
+    public String generateQuery(StringBuilder sortie,List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS,List<AchatMatierePremier> achatMatierePremiers, List<FormuleDetail> formuleDetails, MultipartFile file) throws Exception {
         try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
             Iterable<CSVRecord> records = CSVFormat.DEFAULT.withFirstRecordAsHeader().withIgnoreHeaderCase().withTrim().parse(reader);
 
-            StringBuilder sortie = new StringBuilder("INSERT INTO sortie (id_achatmateriel, date_sortie, quantite) VALUES ");
             StringBuilder sqlBuilder = new StringBuilder("INSERT INTO block (nom, longueur, largeur, epaisseur, cout_production, cout_tehorique, volume, machine_id, block_mere, date_production) VALUES ");
             int count = 0;
 
@@ -163,7 +158,7 @@ public class BlockService {
 
                     double volume = longueur * epaisseur * largeur;
                     //double coutTheorique = cout_theorique_Groupe(formuleDetails, dateCreation, volume);
-                    double coutTheorique = cout_theorique_GroupeUpdate(achatMatierePremiers, formuleDetails, dateCreation, volume);
+                    double coutTheorique = cout_theorique_GroupeUpdate(sortie,quantiteActuelleAchatDTOS,achatMatierePremiers, formuleDetails, dateCreation, volume);
 
 //                    System.out.println("Coût théorique: " + coutTheorique);
 
@@ -194,7 +189,7 @@ public class BlockService {
                 System.out.println("Le fichier CSV est vide ou mal formaté.");
                 return "";
             }
-            sortie.setLength(sortie.length() - 2);
+            sortie.setLength(sortie.length() - 1);
             sortie.append(";");
             //entityManager.createNativeQuery(sortie.toString()).executeUpdate();
             return sqlBuilder.toString();
@@ -214,19 +209,24 @@ public class BlockService {
         }
     }
 
-    public double cout_theorique_GroupeUpdate(List<AchatMatierePremier> achatMatierePremiers, List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
+    public double cout_theorique_GroupeUpdate(StringBuilder sortie,List<QuantiteActuelleAchatDTO> quantiteActuelleAchatDTOS,List<AchatMatierePremier> achatMatierePremiers, List<FormuleDetail> formuleDetails, LocalDate dateCreation, double volume) throws Exception {
         double cout_theorique = 0.0;
-
         for (FormuleDetail formuleDetail : formuleDetails) {
             double necessaire = volume * formuleDetail.getQuantite();
-            for (AchatMatierePremier quantiteActuelleAchatDTO : achatMatierePremiers) {
-                if (quantiteActuelleAchatDTO.getMatierePremiere().getId().equals(formuleDetail.getMatierePremiereId()) && !quantiteActuelleAchatDTO.getDateAchat().isAfter(dateCreation)) {
-                    double quantiteDisponible = quantiteActuelleAchatDTO.getQuantite();
+            for (QuantiteActuelleAchatDTO quantiteActuelleAchat : quantiteActuelleAchatDTOS) {
+                if (quantiteActuelleAchat.getMatierePremiereId().equals(formuleDetail.getMatierePremiereId()) && !quantiteActuelleAchat.getDateAchat().isAfter(dateCreation)) {
+                    double quantiteDisponible = quantiteActuelleAchat.getQuantiteActuelle();
                     if (quantiteDisponible > 0) {
                         double quantiteAUtiliser = Math.min(quantiteDisponible, necessaire);
-                        cout_theorique += quantiteAUtiliser * quantiteActuelleAchatDTO.getPrixAchat();
+                        cout_theorique += quantiteAUtiliser * quantiteActuelleAchat.getPrixAchat();
                         necessaire -= quantiteAUtiliser;
-                        quantiteActuelleAchatDTO.setQuantite(quantiteDisponible - quantiteAUtiliser);
+                        quantiteActuelleAchat.setQuantiteActuelle(quantiteDisponible - quantiteAUtiliser);
+                        // creation sortie
+                        sortie.append("(")
+                                .append(quantiteActuelleAchat.getIdAchat()).append(", ")
+                                .append("'").append(dateCreation).append("'").append(", ")
+                                .append(quantiteAUtiliser)
+                                .append("),");
                     }
                 }
                 if (necessaire <= 0) {
@@ -234,7 +234,7 @@ public class BlockService {
                 }
             }
             if (necessaire > 0) {
-                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + achatMatierePremiers.size());
+                throw new Exception("Pas assez de matière première pour la formule avec la matière première " + formuleDetail.getMatierePremiereId());
             }
         }
         return cout_theorique;
@@ -371,8 +371,6 @@ public class BlockService {
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
 
         for (int i = 1; i <= numBlocks ; i++) {
-            // Générer un nom de bloc
-            String blocName = "Bloc " + i;
 
             // Générer des dimensions
             double longueur = Math.round((MIN_LONGUEUR + random.nextDouble() * (MAX_LONGUEUR - MIN_LONGUEUR)) * 100.0) / 100.0;
@@ -382,8 +380,8 @@ public class BlockService {
             // Calcul du volume et coût de production
             double volume = longueur * largeur * epaisseur;
             double variation = MIN_VARIATION + random.nextDouble() * (MAX_VARIATION - MIN_VARIATION);
-            variation = Math.round(variation * 10.0) / 10.0;
-            double coutProduction = prixVolumique * volume * variation;
+            variation = Math.round(variation * 100.0) / 100.0;
+            double coutProduction = prixVolumique * volume * (1+variation);
 
             // Générer un ID de machine
             long machineId = random.nextLong(minMachineId, maxMachineId + 1);
@@ -397,13 +395,13 @@ public class BlockService {
 
             // Ajouter une ligne CSV
             csvLines.add(String.format(Locale.US,
-                    "%s,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%s,%s",
-                    blocName, longueur, largeur, epaisseur, volume, coutProduction, machineId, null, randomDate.format(formatter)));
+                    "%.2f,%.2f,%.2f,%.2f,%d,%s",
+                    longueur, largeur, epaisseur, coutProduction, machineId, randomDate.format(formatter)));
         }
 
         // Écrire les données dans un fichier CSV
         try (FileWriter writer = new FileWriter(filePath)) {
-            writer.write("nom,longueur,largeur,epaisseur,volume,cout_production,machine_id,block_mere,date_production\n");
+            writer.write("longueur,largeur,epaisseur,cout_production,machine_id,date_production\n");
             for (String line : csvLines) {
                 writer.write(line + "\n");
             }
@@ -440,7 +438,7 @@ public class BlockService {
             double volume = longueur * largeur * epaisseur;
             double variation = MIN_VARIATION + random.nextDouble() * (MAX_VARIATION - MIN_VARIATION);
             variation = Math.round(variation * 10.0) / 10.0;
-            double coutProduction = prixVolumique * volume * variation;
+            double coutProduction = prixVolumique * volume * (1+variation);
 
             // Générer un ID de machine
             long machineId = random.nextLong(minMachineId, maxMachineId + 1);
@@ -468,6 +466,4 @@ public class BlockService {
             System.err.println("Erreur lors de la génération du fichier SQL : " + e.getMessage());
         }
     }
-
-
 }

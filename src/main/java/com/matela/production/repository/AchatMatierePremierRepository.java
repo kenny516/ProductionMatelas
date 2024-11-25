@@ -11,6 +11,11 @@ import java.util.List;
 
 @Repository
 public interface AchatMatierePremierRepository extends JpaRepository<AchatMatierePremier, Long> {
+
+    @Query(value = "select  * from achatmatierepremier order by date_achat",nativeQuery = true)
+    public List<AchatMatierePremier> getAllAsc();
+
+
     @Query(value = """
             SELECT id_achat, matiere_premiere_id, quantite_actuelle, prix_achat, date_achat
             FROM vue_quantite_actuelle_achat
@@ -43,7 +48,6 @@ public interface AchatMatierePremierRepository extends JpaRepository<AchatMatier
             SELECT id_achat, matiere_premiere_id, quantite_actuelle,prix_achat,date_achat
             FROM vue_quantite_actuelle_achat
             WHERE date_achat <= :date
-            GROUP BY id_achat, matiere_premiere_id, date_achat, quantite_actuelle, prix_achat
             """, nativeQuery = true)
     List<Object[]> findByMatierePremiereCurrentQuantitiesBeforePerf(
             @Param("date") LocalDate date
@@ -58,6 +62,28 @@ public interface AchatMatierePremierRepository extends JpaRepository<AchatMatier
     List<AchatMatierePremier> findByDate(
             @Param("date") LocalDate date
     );
+    @Query(value = """
+            SELECT id_achat, matiere_premiere_id, quantite_actuelle,prix_achat,date_achat
+            FROM vue_quantite_actuelle_achat
+            """, nativeQuery = true)
+    List<Object[]> findByJiaby();
 
+
+    @Query(value = """
+            SELECT a.id                                        AS id_achat,
+                   a.matiere_premiere_id,
+                   (a.quantite - COALESCE(SUM(s.quantite), 0)) AS quantite_actuelle,
+                   a.prix_achat,
+                   a.date_achat
+            FROM achatMatierePremier a
+                     LEFT JOIN sortie s
+                               ON a.id = s.id_achatMateriel
+            WHERE s.date_sortie <= :date
+            GROUP BY a.id, a.matiere_premiere_id, a.prix_achat, a.date_achat, a.quantite
+            ORDER BY a.date_achat
+            """, nativeQuery = true)
+    List<Object[]> etatStock(
+            @Param("date") LocalDate date
+    );
 
 }
