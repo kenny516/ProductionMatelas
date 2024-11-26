@@ -61,7 +61,8 @@
                         Importer un fichier CSV
                     </h1>
 
-                    <form th:action="@{/import-csvBlock}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    <form th:action="@{/import-csvBlock}" method="post" enctype="multipart/form-data"
+                          class="needs-validation" novalidate>
                         <!-- File Input -->
                         <div class="mb-4">
                             <label for="csvFile" class="form-label">
@@ -78,6 +79,14 @@
                             </button>
                         </div>
                     </form>
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-secondary btn-lg">
+                            <i class="fas fa-newspaper me-2"></i>
+                            <a th:href="@{/generer}" class="text-info text-reset">
+                                Generer un csv
+                            </a>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

@@ -53,4 +53,18 @@ FROM vue_quantite_actuelle_achat
 WHERE matiere_premiere_id = 1
   AND date_achat <= '2024-11-11'
 GROUP BY id_achat, matiere_premiere_id, date_achat, quantite_actuelle, prix_achat
-HAVING SUM(quantite_actuelle) >= 45
+HAVING SUM(quantite_actuelle) >= 45;
+
+-----------------------------------
+--Etat de stock
+SELECT a.id                                        AS id_achat,
+       a.matiere_premiere_id,
+       (a.quantite - COALESCE(SUM(s.quantite), 0)) AS quantite_actuelle,
+       a.prix_achat,
+       a.date_achat
+FROM achatMatierePremier a
+         LEFT JOIN sortie s
+                   ON a.id = s.id_achatMateriel
+WHERE s.date_sortie <= '2025-01-01'
+GROUP BY a.id, a.matiere_premiere_id, a.prix_achat, a.date_achat, a.quantite
+ORDER BY a.date_achat;

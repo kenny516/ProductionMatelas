@@ -66,9 +66,42 @@ public class AchatmatierepremierService {
         }
         return dtos;
     }
-
     public List<QuantiteActuelleAchatDTO> findByMatierePremiereCurrentQuantitiesDatePerf(LocalDate date) {
         List<Object[]> results = achatmatierepremierRepository.findByMatierePremiereCurrentQuantitiesBeforePerf(date);
+
+        List<QuantiteActuelleAchatDTO> dtos = new ArrayList<>();
+        for (Object[] result : results) {
+            Long idAchat = (Long) result[0];
+            Long matierePremiereId = (Long) result[1];
+            Double quantite_actuelle = (Double) result[2];
+            Double prix_achat = (Double) result[3];
+            LocalDate dateAchat = result[4] != null ? ((java.sql.Date) result[4]).toLocalDate() : null; // date_achat
+
+            QuantiteActuelleAchatDTO dto = new QuantiteActuelleAchatDTO(idAchat, matierePremiereId,quantite_actuelle,prix_achat, dateAchat);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    public List<QuantiteActuelleAchatDTO> findJiabyService() {
+        List<Object[]> results = achatmatierepremierRepository.findByJiaby();
+
+        List<QuantiteActuelleAchatDTO> dtos = new ArrayList<>();
+        for (Object[] result : results) {
+            Long idAchat = (Long) result[0];
+            Long matierePremiereId = (Long) result[1];
+            Double quantite_actuelle = (Double) result[2];
+            Double prix_achat = (Double) result[3];
+            LocalDate dateAchat = result[4] != null ? ((java.sql.Date) result[4]).toLocalDate() : null; // date_achat
+
+            QuantiteActuelleAchatDTO dto = new QuantiteActuelleAchatDTO(idAchat, matierePremiereId,quantite_actuelle,prix_achat, dateAchat);
+            dtos.add(dto);
+        }
+        return dtos;
+    }
+
+    public List<QuantiteActuelleAchatDTO> EtatStock(LocalDate date) {
+        List<Object[]> results = achatmatierepremierRepository.etatStock(date);
 
         List<QuantiteActuelleAchatDTO> dtos = new ArrayList<>();
         for (Object[] result : results) {

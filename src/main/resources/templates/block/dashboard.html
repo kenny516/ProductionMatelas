@@ -86,11 +86,13 @@
     </style>
 </head>
 <body>
+<div th:insert="~{fragments/navbar :: navbar}"></div>
 <div class="container-fluid">
     <h1 class="page-title">
         <i class="fas fa-industry me-2"></i>
         Dashboard Global des Machines
     </h1>
+
 
     <!-- Year Selection Form -->
     <form th:action="@{/dashboard/year}" method="get" class="mb-4">
@@ -98,10 +100,10 @@
             <div class="col-auto">
                 <label for="yearSelect" class="mr-2">Sélectionner l'année</label>
                 <select class="form-control" id="yearSelect" name="year">
+                    <option value="0" th:selected="${year == 0}">Tous</option>
                     <option value="2022" th:selected="${year == 2022}">2022</option>
                     <option value="2023" th:selected="${year == 2023}">2023</option>
                     <option value="2024" th:selected="${year == 2024}">2024</option>
-                    <option value="0" th:selected="${year == 0}">Tous</option>
                 </select>
             </div>
             <div class="col-auto">
@@ -133,8 +135,8 @@
                     <td th:text="${machine.coutProduction}"></td>
                     <td th:text="${machine.coutTheorique}"></td>
                     <td
-                            th:text="${machine.getEcart()}"
-                            th:classappend="${machine.getEcart() <= 0 ? 'cost-positive' : 'cost-negative'}">
+                            th:text="${machine.coutProduction - machine.coutTheorique}"
+                            th:classappend="${machine.coutProduction - machine.coutTheorique <= 0 ? 'cost-positive' : 'cost-negative'}">
                     </td>
                 </tr>
                 </tbody>

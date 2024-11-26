@@ -150,3 +150,5 @@ FROM block
 WHERE id not in (SELECT block_mere
                  FROM block);
 
+
+select round(sum(cout_production)/sum(volume)) from block;
