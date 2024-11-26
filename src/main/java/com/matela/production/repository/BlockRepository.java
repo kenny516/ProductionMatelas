@@ -1,14 +1,11 @@
 package com.matela.production.repository;
 
 import com.matela.production.entity.Block;
-import jakarta.transaction.Transactional;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @Repository
@@ -19,7 +16,6 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
                 SELECT block_mere FROM block WHERE block_mere is not NULL
                 );""", nativeQuery = true)
     List<Block> getValidBlock();
-
     @Query(value = "WITH RECURSIVE descendants AS (" +
             "    SELECT * " +
             "    FROM block " +
@@ -34,7 +30,6 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "ORDER BY date_production DESC " +
             "LIMIT 1", nativeQuery = true)
     Block getLastFIlle(@Param("id") Long id);
-
     @Query(value = "WITH RECURSIVE descendants AS (" +
             "    SELECT *, 1 AS level " +
             "    FROM block " +
@@ -50,8 +45,6 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "ORDER BY date_production ASC " +
             "LIMIT 1", nativeQuery = true)
     Block getFirstFIlle(@Param("id") Long id);
-
-
     @Query(value = "WITH RECURSIVE descendants AS (" +
             "    SELECT * " +
             "    FROM block " +
@@ -64,7 +57,6 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
             "SELECT * " +
             "FROM descendants", nativeQuery = true)
     List<Block> getAllDescendants(@Param("id") Long id);
-
     @Query(value = "WITH RECURSIVE ancestors AS (" +
             "    SELECT * " +
             "    FROM block " +
@@ -83,14 +75,17 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
     @Query("SELECT b FROM Block b ORDER BY b.id ASC")
     List<Block> findBlocklimit(@Param("limit") int limit);
 
-    // CSV content
-    @Transactional
-    @Modifying
-    @Query(value = "INSERT INTO block (id, nom, longueur, largeur, epaisseur, cout_production, volume, machine_id, block_mere, date_production) " +
-            "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)", nativeQuery = true)
-    void insertBlock(Long id, String nom, Double longueur, Double largeur, Double epaisseur, Double coutProduction,
-                     Double volume, Long machine, Long blockMere, LocalDate dateProduction);
+//    // CSV content
+//    @Transactional
+//    @Modifying
+//    @Query(value = "INSERT INTO block (id, nom, longueur, largeur, epaisseur, cout_production, volume, machine_id, block_mere, date_production) " +
+//            "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)", nativeQuery = true)
+//    void insertBlock(Long id, String nom, Double longueur, Double largeur, Double epaisseur, Double coutProduction,
+//                     Double volume, Long machine, Long blockMere, LocalDate dateProduction);
 
+    //
+    @Query(value = "select AVG(cout_production / volume) from block", nativeQuery = true)
+    double prixVolumique();
 
     /// Donner final
     @Query(value = "SELECT machine_id, " +

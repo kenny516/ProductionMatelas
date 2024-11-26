@@ -85,5 +85,22 @@ public interface AchatMatierePremierRepository extends JpaRepository<AchatMatier
     List<Object[]> etatStock(
             @Param("date") LocalDate date
     );
+    //
+    @Query(value = """
+            SELECT 0                                        AS id_achat,
+                   a.matiere_premiere_id,
+                   sum((a.quantite - COALESCE(SUM(s.quantite), 0))) AS quantite_actuelle,
+                   AVG(a.prix_achat),
+                   a.date_achat
+            FROM achatMatierePremier a
+                     LEFT JOIN sortie s
+                               ON a.id = s.id_achatMateriel
+            WHERE s.date_sortie <= :date
+            GROUP BY a.matiere_premiere_id, a.prix_achat, a.date_achat
+            ORDER BY a.date_achat
+            """, nativeQuery = true)
+    List<Object[]> etatStockSomme(
+            @Param("date") LocalDate date
+    );
 
 }

@@ -311,6 +311,9 @@ public class BlockService {
         }
         return prVolumique / volumeTotal;
     }
+    public double prixRevientVolumique(){
+        return blockRepository.prixVolumique();
+    }
 
     public void generateRandomBlocks(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId) {
         ThreadLocalRandom random = ThreadLocalRandom.current();
