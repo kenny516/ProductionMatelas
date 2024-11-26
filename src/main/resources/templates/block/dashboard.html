@@ -90,7 +90,7 @@
 <div class="container-fluid">
     <h1 class="page-title">
         <i class="fas fa-industry me-2"></i>
-        Dashboard Global des Machines
+        ETU002409
     </h1>
 
 
@@ -135,8 +135,8 @@
                     <td th:text="${machine.coutProduction}"></td>
                     <td th:text="${machine.coutTheorique}"></td>
                     <td
-                            th:text="${machine.coutProduction - machine.coutTheorique}"
-                            th:classappend="${machine.coutProduction - machine.coutTheorique <= 0 ? 'cost-positive' : 'cost-negative'}">
+                            th:text="${machine.coutProduction -machine.coutTheorique  }"
+                            th:classappend="${machine.coutProduction -machine.coutTheorique  <= 0 ? 'cost-positive' : 'cost-negative'}">
                     </td>
                 </tr>
                 </tbody>

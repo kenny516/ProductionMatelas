@@ -57,7 +57,14 @@ HAVING SUM(quantite_actuelle) >= 45;
 
 -----------------------------------
 --Etat de stock
-SELECT a.id                                        AS id_achat,
+SELECT
+    0 as id_achat,
+    matiere_premiere_id,
+    sum(quantite_actuelle) as quantite_actuelle,
+    0 as prix_achat,
+    '2022-05-01' as date_achat
+FROM
+(SELECT a.id                                        AS id_achat,
        a.matiere_premiere_id,
        (a.quantite - COALESCE(SUM(s.quantite), 0)) AS quantite_actuelle,
        a.prix_achat,
@@ -67,4 +74,4 @@ FROM achatMatierePremier a
                    ON a.id = s.id_achatMateriel
 WHERE s.date_sortie <= '2025-01-01'
 GROUP BY a.id, a.matiere_premiere_id, a.prix_achat, a.date_achat, a.quantite
-ORDER BY a.date_achat;
+ORDER BY a.date_achat) as stock group by matiere_premiere_id;
