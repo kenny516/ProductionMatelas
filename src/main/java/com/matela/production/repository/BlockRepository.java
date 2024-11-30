@@ -11,6 +11,9 @@ import java.util.List;
 @Repository
 public interface BlockRepository extends JpaRepository<Block, Long> {
 
+    //
+    @Query(value = "select AVG(cout_production / volume) from block", nativeQuery = true)
+    double prixVolumique();
     @Query(value = """
             SELECT * FROM block WHERE id not in (
                 SELECT block_mere FROM block WHERE block_mere is not NULL
@@ -83,9 +86,7 @@ public interface BlockRepository extends JpaRepository<Block, Long> {
 //    void insertBlock(Long id, String nom, Double longueur, Double largeur, Double epaisseur, Double coutProduction,
 //                     Double volume, Long machine, Long blockMere, LocalDate dateProduction);
 
-    //
-    @Query(value = "select AVG(cout_production / volume) from block", nativeQuery = true)
-    double prixVolumique();
+
 
     /// Donner final
     @Query(value = "SELECT machine_id, " +

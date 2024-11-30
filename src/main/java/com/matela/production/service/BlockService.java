@@ -39,8 +39,6 @@ public class BlockService {
     @Autowired
     private AchatmatierepremierService achatmatierepremierService;
     @Autowired
-    private SortieService sortieService;
-    @Autowired
     private FormuleService formuleService;
 
     final LocalDate startDate = LocalDate.of(2022, 1, 1);
@@ -269,7 +267,6 @@ public class BlockService {
         }
         return dtos;
     }
-
     public List<MachineDTO> getMachineCosts(int year) {
         List<Object[]> objects = blockRepository.findQuantiteActuelleParMachineByYear(year);
         List<MachineDTO> dtos = new ArrayList<>();
@@ -299,109 +296,42 @@ public class BlockService {
         }
         return dtos;
     }
-// generation de block
 
-    public double prixRevientVolumique(int nbLine) {
-        double prVolumique = 0;
-        double volumeTotal = 0;
-        List<Block> blocks = blockRepository.findBlocklimit(nbLine);
-        for (Block block : blocks) {
-            volumeTotal += block.getVolumeb();
-            prVolumique += block.getCoutProduction();
-        }
-        return prVolumique / volumeTotal;
-    }
     public double prixRevientVolumique(){
         return blockRepository.prixVolumique();
     }
 
-    public void generateRandomBlocks(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId) {
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        List<Block> blocks = new ArrayList<>(numBlocks);
-
-        double minVariation = 0.9;
-        double maxVariation = 1.1;
-
-        StringBuilder nameBuilder = new StringBuilder();
-
-        for (int i = 0; i < numBlocks; i++) {
-            Block block = new Block();
-
-            nameBuilder.setLength(0);
-            nameBuilder.append("Bloc ").append((char) ('A' + random.nextInt(26))).append(random.nextInt(1000));
-            block.setNom(nameBuilder.toString());
-
-            double longueur = 1 + random.nextDouble() * 5;
-            double largeur = 1 + random.nextDouble() * 5;
-            double epaisseur = 0.5 + random.nextDouble() * 2;
-            block.setLongueur(longueur);
-            block.setLargeur(largeur);
-            block.setEpaisseur(epaisseur);
-
-            // Calcul du volume
-            double volume = longueur * largeur * epaisseur;
-            block.setVolumeb(volume);
-
-            double coutProduction = prixVolumique * volume;
-            double variation = minVariation + (random.nextDouble() * (maxVariation - minVariation));
-            block.setCoutProduction(coutProduction * variation);
-
-            long machineId = minMachineId + random.nextLong(maxMachineId - minMachineId + 1);
-            block.setMachine(new Machine(machineId));
-
-            blocks.add(block);
-
-            if (blocks.size() == 100) {
-                blockRepository.saveAll(blocks);
-                blocks.clear();
-            }
-        }
-
-        if (!blocks.isEmpty()) {
-            blockRepository.saveAll(blocks);
-        }
-    }
 
     public void GenererCSV(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId, String filePath) {
         if (numBlocks <= 0 || minMachineId > maxMachineId) {
             throw new IllegalArgumentException("Invalid input parameters.");
         }
-        //int depart = getAllBlocks().size() + 1;
-
         ThreadLocalRandom random = ThreadLocalRandom.current();
         List<String> csvLines = new ArrayList<>(numBlocks);
-
         DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
-
         for (int i = 1; i <= numBlocks ; i++) {
-
             // Générer des dimensions
             double longueur = Math.round((MIN_LONGUEUR + random.nextDouble() * (MAX_LONGUEUR - MIN_LONGUEUR)) * 100.0) / 100.0;
             double largeur = Math.round((MIN_LARGEUR + random.nextDouble() * (MAX_LARGEUR - MIN_LARGEUR)) * 100.0) / 100.0;
             double epaisseur = Math.round((MIN_EPAISSEUR + random.nextDouble() * (MAX_EPAISSEUR - MIN_EPAISSEUR)) * 100.0) / 100.0;
-
             // Calcul du volume et coût de production
             double volume = longueur * largeur * epaisseur;
             double variation = MIN_VARIATION + random.nextDouble() * (MAX_VARIATION - MIN_VARIATION);
             variation = Math.round(variation * 100.0) / 100.0;
             double coutProduction = prixVolumique * volume * (1+variation);
-
             // Générer un ID de machine
             long machineId = random.nextLong(minMachineId, maxMachineId + 1);
-
             // Générer une date aléatoire entre startDate et endDate
             LocalDate randomDate = null;
             do {
                 long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
                 randomDate = startDate.plusDays(ThreadLocalRandom.current().nextLong(daysBetween + 1));
             } while (randomDate.getDayOfWeek() == DayOfWeek.SATURDAY || randomDate.getDayOfWeek() == DayOfWeek.SUNDAY);
-
             // Ajouter une ligne CSV
             csvLines.add(String.format(Locale.US,
                     "%.2f,%.2f,%.2f,%.2f,%d,%s",
                     longueur, largeur, epaisseur, coutProduction, machineId, randomDate.format(formatter)));
         }
-
         // Écrire les données dans un fichier CSV
         try (FileWriter writer = new FileWriter(filePath)) {
             writer.write("longueur,largeur,epaisseur,cout_production,machine_id,date_production\n");
@@ -414,59 +344,4 @@ public class BlockService {
         }
     }
 
-
-    public void GenererInsertQuery(int numBlocks, double prixVolumique, long minMachineId, long maxMachineId, String filePath) {
-        if (numBlocks <= 0 || minMachineId > maxMachineId) {
-            throw new IllegalArgumentException("Invalid input parameters.");
-        }
-        //int depart = getAllBlocks().size() + 1;
-
-        ThreadLocalRandom random = ThreadLocalRandom.current();
-        StringBuilder sqlQuery = new StringBuilder();
-
-        sqlQuery.append("INSERT INTO bloc ( nom, longueur, largeur, epaisseur, volume, cout_production, machine_id, block_mere, date_production) VALUES\n");
-
-        DateTimeFormatter formatter = DateTimeFormatter.ISO_DATE;
-
-        for (int i = 1; i <= numBlocks ; i++) {
-            // Générer un nom de bloc
-            String blocName = "Bloc " + i;
-
-            // Générer des dimensions
-            double longueur = Math.round((MIN_LONGUEUR + random.nextDouble() * (MAX_LONGUEUR - MIN_LONGUEUR)) * 100.0) / 100.0;
-            double largeur = Math.round((MIN_LARGEUR + random.nextDouble() * (MAX_LARGEUR - MIN_LARGEUR)) * 100.0) / 100.0;
-            double epaisseur = Math.round((MIN_EPAISSEUR + random.nextDouble() * (MAX_EPAISSEUR - MIN_EPAISSEUR)) * 100.0) / 100.0;
-
-            // Calcul du volume et coût de production
-            double volume = longueur * largeur * epaisseur;
-            double variation = MIN_VARIATION + random.nextDouble() * (MAX_VARIATION - MIN_VARIATION);
-            variation = Math.round(variation * 10.0) / 10.0;
-            double coutProduction = prixVolumique * volume * (1+variation);
-
-            // Générer un ID de machine
-            long machineId = random.nextLong(minMachineId, maxMachineId + 1);
-
-            // Générer une date de production
-            LocalDate randomDate = null;
-            do {
-                long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-                randomDate = startDate.plusDays(ThreadLocalRandom.current().nextLong(daysBetween + 1));
-            } while (randomDate.getDayOfWeek() == DayOfWeek.SATURDAY || randomDate.getDayOfWeek() == DayOfWeek.SUNDAY);
-
-            // Ajouter une ligne VALUES
-            sqlQuery.append(String.format(Locale.US,
-                    "('%s', %.2f, %.2f, %.2f, %.2f, %.2f, %d, NULL, '%s')%s\n",
-                    blocName, longueur, largeur, epaisseur, volume, coutProduction, machineId,
-                    randomDate.format(formatter),
-                    i == numBlocks-1 ? ";" : ","));
-        }
-
-        // Écrire la requête SQL dans un fichier
-        try (FileWriter writer = new FileWriter(filePath)) {
-            writer.write(sqlQuery.toString());
-            System.out.println("Fichier SQL généré : " + filePath);
-        } catch (IOException e) {
-            System.err.println("Erreur lors de la génération du fichier SQL : " + e.getMessage());
-        }
-    }
 }

@@ -1,8 +1,10 @@
 package com.matela.production.controller;
 
 import com.matela.production.entity.AchatMatierePremier;
+import com.matela.production.entity.Machine;
 import com.matela.production.service.AchatmatierepremierService;
 import com.matela.production.service.BlockService;
+import com.matela.production.service.MachineService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -20,6 +22,8 @@ public class CsvController {
 
     @Autowired
     AchatmatierepremierService achatmatierepremierService;
+    @Autowired
+    MachineService machineService;
 
 
 
@@ -51,8 +55,9 @@ public class CsvController {
     @GetMapping("/generer")
     public String genererDonner(Model model){
         double prixVolumique = blockService.prixRevientVolumique();
-        blockService.GenererCSV(1000000,6000,1,3,"D:\\L3\\s5\\MrTahina\\SpongeProject\\ProductionMatelas\\database\\csv\\BlockGenerate.csv");
-        //blockService.GenererInsertQuery(1,5000,1,3,"D:\\L3\\s5\\MrTahina\\SpongeProject\\ProductionMatelas\\database\\csv\\BlockGenerate.sql");
+        List<Machine> machine =  machineService.findAll();
+        blockService.GenererCSV(1000000,prixVolumique,machine.getFirst().getId(),machine.getLast().getId(),
+                "D:\\L3\\s5\\MrTahina\\SpongeProject\\ProductionMatelas\\database\\csv\\BlockGenerate.csv");
         model.addAttribute("status", "success");
         return "result-status";
     }
